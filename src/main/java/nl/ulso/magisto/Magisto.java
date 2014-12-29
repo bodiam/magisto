@@ -78,7 +78,7 @@ class Magisto {
             addSourceActions(actions, sourceRoot, targetRoot, forceCopy || currentSitemap.isEmpty());
             addStaticActions(actions, sourceRoot, targetRoot);
 
-            final Sitemap updatedSitemap = currentSitemap.apply(actions.computePageChanges(), documentLoader, sourceRoot);
+            final Sitemap updatedSitemap = currentSitemap.apply(actions.computeChanges(), documentLoader, sourceRoot);
 
             actions.performAll(fileSystem, sourceRoot, targetRoot, new ActionCallback() {
                 @Override

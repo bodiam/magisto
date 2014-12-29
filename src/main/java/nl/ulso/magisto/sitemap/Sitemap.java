@@ -109,9 +109,9 @@ public class Sitemap {
      * @param changes The list of changes to apply.
      * @return A new sitemap, based on the current one, with all changes applied.
      */
-    public Sitemap apply(List<PageChange> changes, DocumentLoader documentLoader, Path sourceRoot) throws IOException {
+    public Sitemap apply(List<Change> changes, DocumentLoader documentLoader, Path sourceRoot) throws IOException {
         final Set<Page> pages = new HashSet<>(this.pages);
-        for (PageChange change : changes) {
+        for (Change change : changes) {
             final Path path = change.getPath();
             switch (change.getChangeType()) {
                 case DELETE:

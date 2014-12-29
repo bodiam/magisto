@@ -23,12 +23,12 @@ import static nl.ulso.magisto.io.Paths.requireRelativePath;
 /**
  * Represents a change to a single page
  */
-public class PageChange {
+public class Change {
 
     private final ChangeType type;
     private final Path path;
 
-    public PageChange(ChangeType type, Path path) {
+    public Change(ChangeType type, Path path) {
         requireRelativePath(path);
         this.type = type;
         this.path = path;

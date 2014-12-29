@@ -18,7 +18,7 @@ package nl.ulso.magisto.action;
 
 import nl.ulso.magisto.document.DocumentConverter;
 import nl.ulso.magisto.io.FileSystem;
-import nl.ulso.magisto.sitemap.PageChange;
+import nl.ulso.magisto.sitemap.Change;
 import nl.ulso.magisto.sitemap.ChangeType;
 
 import java.io.IOException;
@@ -35,7 +35,7 @@ import java.util.*;
  * <li>Add actions to it, by calling the various {@code add...} methods.</li>
  * <li>Perform all actions in the set, by calling the {@link #performAll(nl.ulso.magisto.io.FileSystem, Path, Path,
  * ActionCallback)} method.</li>
- * <li>Compute list of {@link PageChange}s from it, to update the sitemap from.</li>
+ * <li>Compute list of {@link nl.ulso.magisto.sitemap.Change}s from it, to update the sitemap from.</li>
  * </ol>
  * <p>
  * Once all actions are performed, the internal set of actions is depleted.
@@ -131,15 +131,15 @@ public class ActionSet {
         return sourceAction;
     }
 
-    public List<PageChange> computePageChanges() {
-        final List<PageChange> changes = new ArrayList<>();
+    public List<Change> computeChanges() {
+        final List<Change> changes = new ArrayList<>();
         for (Action action : actionMap.values()) {
             final ActionType type = action.getActionType();
             if (type == ActionType.CONVERT_SOURCE) {
-                changes.add(new PageChange(ChangeType.INSERT_OR_UPDATE, action.getPath()));
+                changes.add(new Change(ChangeType.INSERT_OR_UPDATE, action.getPath()));
             }
             if (type == ActionType.DELETE_TARGET) {
-                changes.add(new PageChange(ChangeType.DELETE, action.getPath()));
+                changes.add(new Change(ChangeType.DELETE, action.getPath()));
             }
         }
         return Collections.unmodifiableList(changes);
