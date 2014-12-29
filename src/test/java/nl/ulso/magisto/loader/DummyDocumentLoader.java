@@ -14,7 +14,10 @@
  * limitations under the License
  */
 
-package nl.ulso.magisto.document;
+package nl.ulso.magisto.loader;
+
+import nl.ulso.magisto.document.Document;
+import nl.ulso.magisto.document.DummyDocument;
 
 import java.io.IOException;
 import java.nio.file.Path;

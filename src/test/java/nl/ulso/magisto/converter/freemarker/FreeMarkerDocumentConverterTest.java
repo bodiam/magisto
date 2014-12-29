@@ -14,12 +14,12 @@
  * limitations under the License
  */
 
-package nl.ulso.magisto.document.freemarker;
+package nl.ulso.magisto.converter.freemarker;
 
 import freemarker.template.Template;
-import nl.ulso.magisto.document.DummyDocumentLoader;
+import nl.ulso.magisto.loader.DummyDocumentLoader;
 import nl.ulso.magisto.document.DummyHistory;
-import nl.ulso.magisto.document.markdown.MarkdownDocument;
+import nl.ulso.magisto.loader.markdown.MarkdownDocument;
 import nl.ulso.magisto.io.DummyFileSystem;
 import org.junit.Before;
 import org.junit.Test;

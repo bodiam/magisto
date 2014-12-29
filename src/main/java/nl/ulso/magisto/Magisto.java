@@ -18,11 +18,9 @@ package nl.ulso.magisto;
 
 import nl.ulso.magisto.action.Action;
 import nl.ulso.magisto.action.ActionCallback;
-import nl.ulso.magisto.action.ActionFactory;
 import nl.ulso.magisto.action.ActionSet;
-import nl.ulso.magisto.document.DocumentConverter;
-import nl.ulso.magisto.document.DocumentLoader;
-import nl.ulso.magisto.document.DocumentSupportFactory;
+import nl.ulso.magisto.converter.DocumentConverter;
+import nl.ulso.magisto.loader.DocumentLoader;
 import nl.ulso.magisto.io.FileSystem;
 import nl.ulso.magisto.sitemap.Sitemap;
 
@@ -42,15 +40,12 @@ class Magisto {
 
     private final boolean forceCopy;
     private final FileSystem fileSystem;
-    private final ActionFactory actionFactory;
-    private final DocumentSupportFactory documentSupportFactory;
+    private final MagistoFactory magistoFactory;
 
-    public Magisto(boolean forceOverwrite, FileSystem fileSystem, ActionFactory actionFactory,
-                   DocumentSupportFactory documentSupportFactory) {
+    public Magisto(boolean forceOverwrite, FileSystem fileSystem, MagistoFactory magistoFactory) {
         this.forceCopy = forceOverwrite;
         this.fileSystem = fileSystem;
-        this.actionFactory = actionFactory;
-        this.documentSupportFactory = documentSupportFactory;
+        this.magistoFactory = magistoFactory;
     }
 
     /*
@@ -72,14 +67,14 @@ class Magisto {
 
             final Sitemap currentSitemap = loadCurrentSitemap(targetRoot);
 
-            final ActionSet actions = new ActionSet(actionFactory);
+            final ActionSet actions = new ActionSet(magistoFactory.createActionFactory(sourceRoot, targetRoot));
             addSourceActions(actions, sourceRoot, targetRoot, forceCopy || currentSitemap.isEmpty());
             addStaticActions(actions, sourceRoot, targetRoot);
 
             final Sitemap updatedSitemap = currentSitemap.apply(actions.computeChanges(),
-                    documentSupportFactory.createDocumentLoader(sourceRoot));
+                    magistoFactory.createDocumentLoader(sourceRoot));
 
-            actions.performAll(fileSystem, sourceRoot, targetRoot, new ActionCallback() {
+            actions.performAll(new ActionCallback() {
                 @Override
                 public void actionPerformed(Action action) {
                     statistics.registerActionPerformed(action);
@@ -111,8 +106,8 @@ class Magisto {
      */
     private void addSourceActions(ActionSet actions, Path sourceRoot, Path targetRoot, boolean forceOverwrite)
             throws IOException {
-        final DocumentLoader documentLoader = documentSupportFactory.createDocumentLoader(sourceRoot);
-        final DocumentConverter documentConverter = documentSupportFactory.createDocumentConverter(sourceRoot, targetRoot);
+        final DocumentLoader documentLoader = magistoFactory.createDocumentLoader(sourceRoot);
+        final DocumentConverter documentConverter = magistoFactory.createDocumentConverter(sourceRoot, targetRoot);
         final boolean forceConvert = forceOverwrite || documentConverter.isCustomTemplateChanged();
         final Iterator<Path> sources = fileSystem.findAllPaths(sourceRoot,
                 prioritizeOnExtension(documentLoader.getSupportedExtensions())).iterator();
@@ -127,12 +122,12 @@ class Magisto {
             if (comparison == 0) { // Corresponding source and target
                 if (isSourceNewerThanTarget(sourceRoot.resolve(source), targetRoot.resolve(target))) {
                     if (documentLoader.supports(source)) {
-                        actions.addConvertSourceAction(source, documentConverter);
+                        actions.addConvertSourceAction(source);
                     } else {
                         actions.addCopySourceAction(source);
                     }
                 } else if (forceConvert && documentLoader.supports(source)) {
-                    actions.addConvertSourceAction(source, documentConverter);
+                    actions.addConvertSourceAction(source);
                 } else if (forceCopy) {
                     actions.addCopySourceAction(source);
                 } else {
@@ -143,7 +138,7 @@ class Magisto {
 
             } else if (comparison < 0) { // Source exists, no corresponding target
                 if (documentLoader.supports(source)) {
-                    actions.addConvertSourceAction(source, documentConverter);
+                    actions.addConvertSourceAction(source);
                 } else {
                     actions.addCopySourceAction(source);
                 }
@@ -166,7 +161,7 @@ class Magisto {
             final Path targetPath = targetRoot.resolve(staticPath);
             if (forceCopy || fileSystem.notExists(targetPath)
                     || isSourceNewerThanTarget(staticRoot.resolve(staticPath), targetPath)) {
-                actions.addCopyStaticAction(staticPath, STATIC_CONTENT_DIRECTORY);
+                actions.addCopyStaticAction(STATIC_CONTENT_DIRECTORY, staticPath);
             } else {
                 actions.addSkipStaticAction(staticPath);
             }
@@ -177,7 +172,8 @@ class Magisto {
         return paths.hasNext() ? paths.next() : null;
     }
 
-    private int compareNullablePaths(Path source, Path target, DocumentLoader documentLoader, DocumentConverter documentConverter) {
+    private int compareNullablePaths(Path source, Path target, DocumentLoader documentLoader,
+                                     DocumentConverter documentConverter) {
         if (source == null) {
             return 1;
         }

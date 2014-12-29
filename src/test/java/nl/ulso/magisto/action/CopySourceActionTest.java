@@ -30,12 +30,20 @@ public class CopySourceActionTest {
 
     @Test
     public void testActionType() throws Exception {
-        assertEquals(ActionType.COPY_SOURCE, new CopySourceAction(createPath("copy")).getActionType());
+        final DummyFileSystem fileSystem = new DummyFileSystem();
+        final Path sourceRoot = fileSystem.resolveSourceDirectory("source");
+        final Path targetRoot = fileSystem.prepareTargetDirectory("target");
+        assertEquals(ActionType.COPY_SOURCE, new CopySourceAction(
+                fileSystem, sourceRoot, targetRoot, createPath("copy")).getActionType());
     }
 
     @Test
     public void testActionCategory() throws Exception {
-        assertEquals(ActionCategory.SOURCE, new CopySourceAction(createPath("copy")).getActionCategory());
+        final DummyFileSystem fileSystem = new DummyFileSystem();
+        final Path sourceRoot = fileSystem.resolveSourceDirectory("source");
+        final Path targetRoot = fileSystem.prepareTargetDirectory("target");
+        assertEquals(ActionCategory.SOURCE, new CopySourceAction(
+                fileSystem, sourceRoot, targetRoot, createPath("copy")).getActionCategory());
     }
 
     @Test
@@ -44,7 +52,7 @@ public class CopySourceActionTest {
         final Path sourceRoot = fileSystem.resolveSourceDirectory("source");
         final Path targetRoot = fileSystem.prepareTargetDirectory("target");
         final DummyPathEntry entry = createPathEntry("file");
-        new CopySourceAction(entry.getPath()).perform(fileSystem, sourceRoot, targetRoot);
+        new CopySourceAction(fileSystem, sourceRoot, targetRoot, entry.getPath()).perform();
         assertEquals("source:file -> target", fileSystem.getLoggedCopies());
     }
 }

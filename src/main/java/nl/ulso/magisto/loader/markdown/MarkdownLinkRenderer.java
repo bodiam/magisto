@@ -14,14 +14,14 @@
  * limitations under the License
  */
 
-package nl.ulso.magisto.document.markdown;
+package nl.ulso.magisto.loader.markdown;
 
 import org.parboiled.common.StringUtils;
 import org.pegdown.LinkRenderer;
 import org.pegdown.ast.ExpLinkNode;
 import org.pegdown.ast.RefLinkNode;
 
-import static nl.ulso.magisto.document.markdown.MarkdownDocumentLoader.MARKDOWN_EXTENSIONS;
+import static nl.ulso.magisto.loader.markdown.MarkdownDocumentLoader.MARKDOWN_EXTENSIONS;
 import static org.pegdown.FastEncoder.encode;
 
 /**

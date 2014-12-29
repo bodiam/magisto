@@ -19,8 +19,6 @@ package nl.ulso.magisto;
 import com.lexicalscope.jewel.cli.ArgumentValidationException;
 import com.lexicalscope.jewel.cli.CliFactory;
 import com.lexicalscope.jewel.cli.ValidationFailure;
-import nl.ulso.magisto.action.RealActionFactory;
-import nl.ulso.magisto.document.RealDocumentSupportFactory;
 import nl.ulso.magisto.git.GitClient;
 import nl.ulso.magisto.git.GitClientStub;
 import nl.ulso.magisto.git.JGitClient;
@@ -100,17 +98,16 @@ public class MagistoLauncher {
             return DUMMY_MAGISTO;
         }
         final RealFileSystem fileSystem = new RealFileSystem();
-        final RealActionFactory actionFactory = new RealActionFactory();
-        final RealDocumentSupportFactory documentFactory = new RealDocumentSupportFactory(fileSystem, gitClient);
-        return new Magisto(forceOverwrite, fileSystem, actionFactory, documentFactory);
+        final RealMagistoFactory magistoFactory = new RealMagistoFactory(fileSystem, gitClient);
+        return new Magisto(forceOverwrite, fileSystem, magistoFactory);
     }
 
     private static void run(Magisto magisto, String sourceDirectory, String targetDirectory) {
         final Statistics statistics;
         try {
             statistics = magisto.run(sourceDirectory, targetDirectory);
-        } catch (IOException e) {
-            System.err.println("Oops! An IO exception occurred...");
+        } catch (Exception e) {
+            System.err.println("Oops! An exception occurred...");
             System.err.println();
             System.err.println("Deliver the following to your friendly neighbourhood geek to help you out:");
             System.err.println();

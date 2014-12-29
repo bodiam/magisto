@@ -16,7 +16,7 @@
 
 package nl.ulso.magisto.sitemap;
 
-import nl.ulso.magisto.document.DocumentLoader;
+import nl.ulso.magisto.loader.DocumentLoader;
 import nl.ulso.magisto.io.FileSystem;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;

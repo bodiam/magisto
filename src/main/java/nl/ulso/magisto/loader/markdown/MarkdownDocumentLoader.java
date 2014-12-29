@@ -14,10 +14,10 @@
  * limitations under the License
  */
 
-package nl.ulso.magisto.document.markdown;
+package nl.ulso.magisto.loader.markdown;
 
 import nl.ulso.magisto.document.Document;
-import nl.ulso.magisto.document.DocumentLoader;
+import nl.ulso.magisto.loader.DocumentLoader;
 import nl.ulso.magisto.git.GitClient;
 import nl.ulso.magisto.io.FileSystem;
 

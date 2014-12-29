@@ -14,13 +14,21 @@
  * limitations under the License
  */
 
-package nl.ulso.magisto.document;
+package nl.ulso.magisto.loader;
 
+import nl.ulso.magisto.document.Document;
+
+import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Set;
 
-public interface DocumentSupportFactory {
+public interface DocumentLoader {
 
-    DocumentLoader createDocumentLoader(Path sourceRoot);
+    Set<String> getSupportedExtensions();
 
-    DocumentConverter createDocumentConverter(Path sourceRoot, Path targetRoot);
+    boolean supports(Path path);
+
+    public Path getSourceRoot();
+
+    public Document loadDocument(Path path) throws IOException;
 }

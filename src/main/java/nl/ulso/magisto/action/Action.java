@@ -16,8 +16,6 @@
 
 package nl.ulso.magisto.action;
 
-import nl.ulso.magisto.io.FileSystem;
-
 import java.io.IOException;
 import java.nio.file.Path;
 
@@ -32,5 +30,5 @@ public interface Action {
 
     ActionType getActionType();
 
-    void perform(FileSystem fileSystem, Path sourceRoot, Path targetRoot) throws IOException;
+    void perform() throws IOException;
 }

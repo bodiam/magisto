@@ -16,7 +16,7 @@
 
 package nl.ulso.magisto.action;
 
-import nl.ulso.magisto.document.DummyDocumentConverter;
+import nl.ulso.magisto.converter.DummyDocumentConverter;
 import nl.ulso.magisto.io.DummyFileSystem;
 import nl.ulso.magisto.io.DummyPathEntry;
 import org.junit.Before;
@@ -45,20 +45,19 @@ public class ConvertSourceActionTest {
     @Test
     public void testActionType() throws Exception {
         assertEquals(ActionType.CONVERT_SOURCE,
-                new ConvertSourceAction(createPath("convert"), fileConverter).getActionType());
+                new ConvertSourceAction(fileConverter, createPath("convert")).getActionType());
     }
 
     @Test
     public void testActionCategory() throws Exception {
         assertEquals(ActionCategory.SOURCE,
-                new ConvertSourceAction(createPath("convert"), fileConverter).getActionCategory());
+                new ConvertSourceAction(fileConverter, createPath("convert")).getActionCategory());
     }
 
     @Test
     public void testCopy() throws Exception {
-        final DummyFileSystem fileSystem = new DummyFileSystem();
         final DummyPathEntry entry = createPathEntry("file.convert");
-        new ConvertSourceAction(entry.getPath(), fileConverter).perform(fileSystem, sourceRoot, targetRoot);
+        new ConvertSourceAction(fileConverter, entry.getPath()).perform();
         assertEquals("source:file.convert -> target:file.converted", fileConverter.getLoggedConversions());
     }
 }

@@ -30,11 +30,16 @@ import static nl.ulso.magisto.io.Paths.requireAbsolutePath;
  */
 class CopyStaticAction extends AbstractAction {
 
-    private final String staticContentDirectory;
+    private final FileSystem fileSystem;
+    private final Path staticRoot;
+    private final Path targetRoot;
 
-    CopyStaticAction(Path path, String staticContentDirectory) {
+    CopyStaticAction(FileSystem fileSystem, Path sourceRoot, String staticContentDirectory, Path targetRoot, Path path) {
         super(path, STATIC);
-        this.staticContentDirectory = staticContentDirectory;
+        this.fileSystem = fileSystem;
+        this.staticRoot = requireAbsolutePath(sourceRoot).resolve(staticContentDirectory);
+        this.targetRoot = requireAbsolutePath(targetRoot);
+
     }
 
     @Override
@@ -43,11 +48,7 @@ class CopyStaticAction extends AbstractAction {
     }
 
     @Override
-    public void perform(FileSystem fileSystem, Path sourceRoot, Path targetRoot) throws IOException {
-        fileSystem.copy(
-                requireAbsolutePath(sourceRoot).resolve(staticContentDirectory),
-                requireAbsolutePath(targetRoot),
-                getPath()
-        );
+    public void perform() throws IOException {
+        fileSystem.copy(staticRoot, targetRoot, getPath());
     }
 }

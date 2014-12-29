@@ -18,6 +18,7 @@ package nl.ulso.magisto.action;
 
 import nl.ulso.magisto.io.DummyFileSystem;
 import nl.ulso.magisto.io.DummyPathEntry;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.nio.file.Path;
@@ -28,23 +29,34 @@ import static org.junit.Assert.assertEquals;
 
 public class DeleteTargetActionTest {
 
+    private DummyFileSystem fileSystem;
+    private Path targetRoot;
+
+    @Before
+    public void setUp() throws Exception {
+        fileSystem = new DummyFileSystem();
+        targetRoot = fileSystem.prepareTargetDirectory("target");
+    }
+
+
     @Test
     public void testActionType() throws Exception {
-        assertEquals(ActionType.DELETE_TARGET, new DeleteTargetAction(createPath("delete")).getActionType());
+        assertEquals(ActionType.DELETE_TARGET, new DeleteTargetAction(
+                fileSystem, targetRoot, createPath("delete")).getActionType());
     }
 
     @Test
     public void testActionCategory() throws Exception {
-        assertEquals(ActionCategory.SOURCE, new DeleteTargetAction(createPath("delete")).getActionCategory());
+        assertEquals(ActionCategory.SOURCE, new DeleteTargetAction(
+                fileSystem, targetRoot, createPath("delete")).getActionCategory());
     }
 
     @Test
     public void testDelete() throws Exception {
         final DummyFileSystem fileSystem = new DummyFileSystem();
-        final Path sourceRoot = fileSystem.resolveSourceDirectory("source");
         final Path targetRoot = fileSystem.prepareTargetDirectory("target");
         final DummyPathEntry entry = createPathEntry("file");
-        new DeleteTargetAction(entry.getPath()).perform(fileSystem, sourceRoot, targetRoot);
+        new DeleteTargetAction(fileSystem, targetRoot, entry.getPath()).perform();
         assertEquals("target:file", fileSystem.getLoggedDeletions());
     }
 }

@@ -17,7 +17,6 @@
 package nl.ulso.magisto;
 
 import nl.ulso.magisto.action.DummyActionFactory;
-import nl.ulso.magisto.document.DummyDocumentSupportFactory;
 import nl.ulso.magisto.io.DummyFileSystem;
 import nl.ulso.magisto.io.DummyPathEntry;
 import nl.ulso.magisto.sitemap.SitemapTest;
@@ -33,16 +32,14 @@ import static org.junit.Assert.assertEquals;
 public class MagistoTest {
 
     private DummyFileSystem fileSystem;
-    private DummyActionFactory actionFactory;
-    private DummyDocumentSupportFactory documentFactory;
+    private DummyMagistoFactory magistoFactory;
     private Magisto magisto;
 
     @Before
     public void setUp() throws Exception {
         fileSystem = new DummyFileSystem();
-        actionFactory = new DummyActionFactory();
-        documentFactory = new DummyDocumentSupportFactory();
-        magisto = new Magisto(false, fileSystem, actionFactory, documentFactory);
+        magistoFactory = new DummyMagistoFactory();
+        magisto = new Magisto(false, fileSystem, magistoFactory);
     }
 
     @Test
@@ -110,8 +107,8 @@ public class MagistoTest {
     @Test
     public void testMultipleSourceAndTargetFilesWithDetectedOverwrite() throws Exception {
         prepareMultipleSourceAndTargetFiles();
-        documentFactory.setCustomTemplateChanged();
-        magisto = new Magisto(false, fileSystem, actionFactory, documentFactory);
+        magistoFactory.setCustomTemplateChanged();
+        magisto = new Magisto(false, fileSystem, magistoFactory);
         runTest(
                 2, // sameFile1, sameFile2
                 1, // baz.txt
@@ -124,7 +121,7 @@ public class MagistoTest {
 
     @Test
     public void testMultipleSourceAndTargetFilesWithForcedOverwrite() throws Exception {
-        magisto = new Magisto(true, fileSystem, actionFactory, documentFactory);
+        magisto = new Magisto(true, fileSystem, magistoFactory);
         prepareMultipleSourceAndTargetFiles();
         runTest(
                 0, // no skips: forced overwrite
@@ -184,6 +181,7 @@ public class MagistoTest {
         final Statistics statistics = magisto.run("source", "target");
         System.out.println(statistics);
         // Number of actions performed must match up:
+        final DummyActionFactory actionFactory = magistoFactory.getDummyActionFactory();
         assertEquals(expectedSourceSkips, actionFactory.countFor(SKIP_SOURCE));
         assertEquals(expectedSourceCopies, actionFactory.countFor(COPY_SOURCE));
         assertEquals(expectedSourceConversions, actionFactory.countFor(CONVERT_SOURCE));

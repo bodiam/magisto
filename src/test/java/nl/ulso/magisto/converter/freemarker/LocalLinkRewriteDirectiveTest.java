@@ -14,7 +14,7 @@
  * limitations under the License
  */
 
-package nl.ulso.magisto.document.freemarker;
+package nl.ulso.magisto.converter.freemarker;
 
 import org.junit.Before;
 import org.junit.Test;

@@ -23,14 +23,20 @@ import java.nio.file.Path;
 
 import static nl.ulso.magisto.action.ActionCategory.SOURCE;
 import static nl.ulso.magisto.action.ActionType.DELETE_TARGET;
+import static nl.ulso.magisto.io.Paths.requireAbsolutePath;
 
 /**
  * Deletes a file or directory from the target root
  */
 class DeleteTargetAction extends AbstractAction {
 
-    DeleteTargetAction(Path path) {
+    private final FileSystem fileSystem;
+    private final Path targetRoot;
+
+    DeleteTargetAction(FileSystem fileSystem, Path targetRoot, Path path) {
         super(path, SOURCE);
+        this.fileSystem = fileSystem;
+        this.targetRoot = requireAbsolutePath(targetRoot);
     }
 
     @Override
@@ -39,7 +45,7 @@ class DeleteTargetAction extends AbstractAction {
     }
 
     @Override
-    public void perform(FileSystem fileSystem, Path sourceRoot, Path targetRoot) throws IOException {
+    public void perform() throws IOException {
         fileSystem.delete(targetRoot, getPath());
     }
 }

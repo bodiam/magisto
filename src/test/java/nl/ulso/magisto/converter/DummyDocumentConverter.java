@@ -14,7 +14,7 @@
  * limitations under the License
  */
 
-package nl.ulso.magisto.document;
+package nl.ulso.magisto.converter;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -32,6 +32,10 @@ public class DummyDocumentConverter implements DocumentConverter {
         this(createPath("source"), createPath("target"), false);
     }
 
+    public DummyDocumentConverter(Path sourceRoot, Path targetRoot) {
+        this(sourceRoot, targetRoot, false);
+    }
+
     public DummyDocumentConverter(Path sourceRoot, Path targetRoot, boolean isCustomTemplateChanged) {
         this.sourceRoot = sourceRoot;
         this.targetRoot = targetRoot;
@@ -41,6 +45,16 @@ public class DummyDocumentConverter implements DocumentConverter {
     @Override
     public String getTargetExtension() {
         return "converted";
+    }
+
+    @Override
+    public Path getSourceRoot() {
+        return sourceRoot;
+    }
+
+    @Override
+    public Path getTargetRoot() {
+        return targetRoot;
     }
 
     @Override

@@ -16,15 +16,28 @@
 
 package nl.ulso.magisto.action;
 
-import nl.ulso.magisto.document.DummyDocumentConverter;
+import nl.ulso.magisto.converter.DummyDocumentConverter;
+import nl.ulso.magisto.io.DummyFileSystem;
+import org.junit.Before;
 import org.junit.Test;
+
+import java.nio.file.Path;
 
 import static nl.ulso.magisto.io.Paths.createPath;
 import static org.junit.Assert.assertNotNull;
 
 public class RealActionFactoryTest {
 
-    private final ActionFactory factory = new RealActionFactory();
+    private ActionFactory factory;
+
+    @Before
+    public void setUp() throws Exception {
+        final DummyFileSystem fileSystem = new DummyFileSystem();
+        final Path sourceRoot = fileSystem.resolveSourceDirectory("source");
+        final Path targetRoot = fileSystem.prepareTargetDirectory("target");
+        factory = new RealActionFactory(fileSystem, new DummyDocumentConverter(sourceRoot, targetRoot));
+
+    }
 
     @Test
     public void testSkipSourceAction() throws Exception {
@@ -43,12 +56,12 @@ public class RealActionFactoryTest {
 
     @Test
     public void testCopyStaticAction() throws Exception {
-        assertNotNull(factory.copyStatic(createPath("copy"), "."));
+        assertNotNull(factory.copyStatic(".", createPath("copy")));
     }
 
     @Test
     public void testConvertAction() throws Exception {
-        assertNotNull(factory.convertSource(createPath("convert"), new DummyDocumentConverter()));
+        assertNotNull(factory.convertSource(createPath("convert")));
     }
 
     @Test

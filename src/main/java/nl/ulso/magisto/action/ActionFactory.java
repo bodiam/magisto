@@ -16,8 +16,6 @@
 
 package nl.ulso.magisto.action;
 
-import nl.ulso.magisto.document.DocumentConverter;
-
 import java.nio.file.Path;
 
 /**
@@ -31,9 +29,9 @@ public interface ActionFactory {
 
     Action copySource(Path path);
 
-    Action copyStatic(Path path, String staticContentDirectory);
+    Action copyStatic(String staticContentDirectory, Path path);
 
-    Action convertSource(Path path, DocumentConverter documentConverter);
+    Action convertSource(Path path);
 
     Action deleteTarget(Path path);
 }

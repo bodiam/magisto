@@ -14,12 +14,20 @@
  * limitations under the License
  */
 
-package nl.ulso.magisto.document;
+package nl.ulso.magisto;
+
+import nl.ulso.magisto.action.ActionFactory;
+import nl.ulso.magisto.action.DummyActionFactory;
+import nl.ulso.magisto.converter.DocumentConverter;
+import nl.ulso.magisto.loader.DocumentLoader;
+import nl.ulso.magisto.converter.DummyDocumentConverter;
+import nl.ulso.magisto.loader.DummyDocumentLoader;
 
 import java.nio.file.Path;
 
-public class DummyDocumentSupportFactory implements DocumentSupportFactory {
+public class DummyMagistoFactory implements MagistoFactory {
 
+    private final DummyActionFactory dummyActionFactory = new DummyActionFactory();
     private boolean customTemplateChanged = false;
 
     @Override
@@ -32,7 +40,16 @@ public class DummyDocumentSupportFactory implements DocumentSupportFactory {
         return new DummyDocumentConverter(sourceRoot, targetRoot, customTemplateChanged);
     }
 
+    @Override
+    public ActionFactory createActionFactory(Path sourceRoot, Path targetRoot) {
+        return dummyActionFactory;
+    }
+
     public void setCustomTemplateChanged() {
         this.customTemplateChanged = true;
+    }
+
+    public DummyActionFactory getDummyActionFactory() {
+        return dummyActionFactory;
     }
 }

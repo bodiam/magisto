@@ -16,8 +16,6 @@
 
 package nl.ulso.magisto;
 
-import nl.ulso.magisto.action.RealActionFactory;
-import nl.ulso.magisto.document.RealDocumentSupportFactory;
 import nl.ulso.magisto.git.GitClient;
 import nl.ulso.magisto.git.GitClientStub;
 import nl.ulso.magisto.git.JGitClient;
@@ -60,9 +58,8 @@ public class MagistoMojo extends AbstractMojo {
         final Handler consoleHandler = configureLogging(verbose);
         final GitClient gitClient = createGitClient(sourceDirectory);
         final RealFileSystem fileSystem = new RealFileSystem();
-        final RealActionFactory actionFactory = new RealActionFactory();
-        final RealDocumentSupportFactory documentFactory = new RealDocumentSupportFactory(fileSystem, gitClient);
-        final Magisto magisto = new Magisto(forceOverwrite, fileSystem, actionFactory, documentFactory);
+        final RealMagistoFactory magistoFactory = new RealMagistoFactory(fileSystem, gitClient);
+        final Magisto magisto = new Magisto(forceOverwrite, fileSystem, magistoFactory);
         try {
             magisto.run(sourceDirectory, targetDirectory).log();
         } catch (IOException e) {

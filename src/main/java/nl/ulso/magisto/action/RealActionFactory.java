@@ -16,7 +16,8 @@
 
 package nl.ulso.magisto.action;
 
-import nl.ulso.magisto.document.DocumentConverter;
+import nl.ulso.magisto.converter.DocumentConverter;
+import nl.ulso.magisto.io.FileSystem;
 
 import java.nio.file.Path;
 
@@ -24,6 +25,19 @@ import java.nio.file.Path;
  * Real implementation of the {@link ActionFactory}.
  */
 public class RealActionFactory implements ActionFactory {
+
+    private final FileSystem fileSystem;
+    private final DocumentConverter documentConverter;
+    private final Path sourceRoot;
+    private final Path targetRoot;
+
+    public RealActionFactory(FileSystem fileSystem, DocumentConverter documentConverter) {
+        this.fileSystem = fileSystem;
+        this.documentConverter = documentConverter;
+        this.sourceRoot = documentConverter.getSourceRoot();
+        this.targetRoot = documentConverter.getTargetRoot();
+    }
+
     @Override
     public Action skipSource(Path path) {
         return new SkipSourceAction(path);
@@ -36,21 +50,21 @@ public class RealActionFactory implements ActionFactory {
 
     @Override
     public Action copySource(Path path) {
-        return new CopySourceAction(path);
+        return new CopySourceAction(fileSystem, sourceRoot, targetRoot, path);
     }
 
     @Override
-    public Action copyStatic(Path path, String staticContentDirectory) {
-        return new CopyStaticAction(path, staticContentDirectory);
+    public Action copyStatic(String staticContentDirectory, Path path) {
+        return new CopyStaticAction(fileSystem, sourceRoot, staticContentDirectory, targetRoot, path);
     }
 
     @Override
-    public Action convertSource(Path path, DocumentConverter documentConverter) {
-        return new ConvertSourceAction(path, documentConverter);
+    public Action convertSource(Path path) {
+        return new ConvertSourceAction(documentConverter, path);
     }
 
     @Override
     public Action deleteTarget(Path path) {
-        return new DeleteTargetAction(path);
+        return new DeleteTargetAction(fileSystem, targetRoot, path);
     }
 }

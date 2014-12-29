@@ -30,8 +30,15 @@ import static nl.ulso.magisto.io.Paths.requireAbsolutePath;
  */
 class CopySourceAction extends AbstractAction {
 
-    CopySourceAction(Path path) {
+    private final FileSystem fileSystem;
+    private final Path sourceRoot;
+    private final Path targetRoot;
+
+    CopySourceAction(FileSystem fileSystem, Path sourceRoot, Path targetRoot, Path path) {
         super(path, SOURCE);
+        this.fileSystem = fileSystem;
+        this.sourceRoot = requireAbsolutePath(sourceRoot);
+        this.targetRoot = requireAbsolutePath(targetRoot);
     }
 
     @Override
@@ -40,11 +47,7 @@ class CopySourceAction extends AbstractAction {
     }
 
     @Override
-    public void perform(FileSystem fileSystem, Path sourceRoot, Path targetRoot) throws IOException {
-        fileSystem.copy(
-                requireAbsolutePath(sourceRoot),
-                requireAbsolutePath(targetRoot),
-                getPath()
-        );
+    public void perform() throws IOException {
+        fileSystem.copy(sourceRoot,targetRoot, getPath());
     }
 }

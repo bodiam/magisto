@@ -14,7 +14,7 @@
  * limitations under the License
  */
 
-package nl.ulso.magisto.document.markdown;
+package nl.ulso.magisto.loader.markdown;
 
 import org.pegdown.ast.*;
 

@@ -14,7 +14,7 @@
  * limitations under the License
  */
 
-package nl.ulso.magisto.document;
+package nl.ulso.magisto.converter;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -30,6 +30,10 @@ import java.nio.file.Path;
 public interface DocumentConverter {
 
     String getTargetExtension();
+
+    Path getSourceRoot();
+
+    Path getTargetRoot();
 
     Path getConvertedFileName(Path path);
 

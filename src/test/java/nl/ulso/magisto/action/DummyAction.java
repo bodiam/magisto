@@ -16,8 +16,6 @@
 
 package nl.ulso.magisto.action;
 
-import nl.ulso.magisto.io.FileSystem;
-
 import java.nio.file.Path;
 
 public class DummyAction implements Action {
@@ -50,7 +48,7 @@ public class DummyAction implements Action {
     }
 
     @Override
-    public void perform(FileSystem fileSystem, Path sourceRoot, Path targetRoot) {
+    public void perform() {
         factory.registerActionPerformed(this);
     }
 

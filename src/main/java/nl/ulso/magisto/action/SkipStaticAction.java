@@ -16,8 +16,6 @@
 
 package nl.ulso.magisto.action;
 
-import nl.ulso.magisto.io.FileSystem;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.logging.Logger;
@@ -41,7 +39,7 @@ class SkipStaticAction extends AbstractAction {
     }
 
     @Override
-    public void perform(FileSystem fileSystem, Path sourceRoot, Path targetRoot) throws IOException {
+    public void perform() throws IOException {
         Logger.getGlobal().log(FINE, String.format("Skipping static '%s'. No changes detected.", getPath()));
     }
 }

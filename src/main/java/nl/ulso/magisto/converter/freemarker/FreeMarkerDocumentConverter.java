@@ -14,7 +14,7 @@
  * limitations under the License
  */
 
-package nl.ulso.magisto.document.freemarker;
+package nl.ulso.magisto.converter.freemarker;
 
 import freemarker.cache.ClassTemplateLoader;
 import freemarker.cache.MultiTemplateLoader;
@@ -23,8 +23,8 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import nl.ulso.magisto.document.Document;
-import nl.ulso.magisto.document.DocumentConverter;
-import nl.ulso.magisto.document.DocumentLoader;
+import nl.ulso.magisto.converter.DocumentConverter;
+import nl.ulso.magisto.loader.DocumentLoader;
 import nl.ulso.magisto.io.FileSystem;
 
 import java.io.IOException;
@@ -83,6 +83,16 @@ public class FreeMarkerDocumentConverter implements DocumentConverter {
     @Override
     public String getTargetExtension() {
         return TARGET_EXTENSION;
+    }
+
+    @Override
+    public Path getSourceRoot() {
+        return documentLoader.getSourceRoot();
+    }
+
+    @Override
+    public Path getTargetRoot() {
+        return targetRoot;
     }
 
     @Override
