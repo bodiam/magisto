@@ -16,9 +16,15 @@
 
 package nl.ulso.magisto.git;
 
+import nl.ulso.magisto.document.History;
+
 import java.nio.file.Path;
 
 public interface GitClient {
 
+    /**
+     * @param path Relative path within the repository
+     * @return History of the designated path.
+     */
     History getHistory(Path path);
 }

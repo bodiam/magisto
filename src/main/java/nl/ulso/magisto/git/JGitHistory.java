@@ -16,6 +16,8 @@
 
 package nl.ulso.magisto.git;
 
+import nl.ulso.magisto.document.Commit;
+import nl.ulso.magisto.document.History;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -28,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import static java.util.Collections.unmodifiableList;
+import static nl.ulso.magisto.io.Paths.requireRelativePath;
 
 class JGitHistory implements History {
 
@@ -38,6 +41,7 @@ class JGitHistory implements History {
     private List<Commit> commits;
 
     JGitHistory(Git git, Path path) {
+        requireRelativePath(path);
         this.git = git;
         this.path = path.toString();
         this.lastCommit = null;

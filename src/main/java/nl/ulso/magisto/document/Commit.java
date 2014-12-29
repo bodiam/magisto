@@ -14,7 +14,7 @@
  * limitations under the License
  */
 
-package nl.ulso.magisto.git;
+package nl.ulso.magisto.document;
 
 import java.util.Date;
 
@@ -22,7 +22,7 @@ import java.util.Date;
  * Exposes information on a single commit; it's passed in the page model for each file.
  */
 public class Commit {
-    static final Commit DEFAULT_COMMIT = new Commit("UNKNOWN", new Date(0), "UNKNOWN", "UNKNOWN", "-", "-");
+    public static final Commit DEFAULT_COMMIT = new Commit("UNKNOWN", new Date(0), "UNKNOWN", "UNKNOWN", "-", "-");
 
     private final String id;
     private final Date timestamp;

@@ -16,13 +16,15 @@
 
 package nl.ulso.magisto.document.freemarker;
 
+import freemarker.cache.ClassTemplateLoader;
+import freemarker.cache.MultiTemplateLoader;
+import freemarker.cache.TemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
-import nl.ulso.magisto.document.DocumentConverter;
 import nl.ulso.magisto.document.Document;
+import nl.ulso.magisto.document.DocumentConverter;
 import nl.ulso.magisto.document.DocumentLoader;
-import nl.ulso.magisto.git.GitClient;
 import nl.ulso.magisto.io.FileSystem;
 
 import java.io.IOException;
@@ -39,7 +41,7 @@ import static nl.ulso.magisto.io.Paths.splitOnExtension;
 /**
  * Converts Markdown files to HTML using a FreeMarker template.
  */
-class FreeMarkerDocumentConverter implements DocumentConverter {
+public class FreeMarkerDocumentConverter implements DocumentConverter {
 
     private static final String TEMPLATE_PATH = "/nl/ulso/magisto";
     private static final String DEFAULT_PAGE_TEMPLATE = "page_template.ftl";
@@ -48,56 +50,31 @@ class FreeMarkerDocumentConverter implements DocumentConverter {
 
     private final FileSystem fileSystem;
     private final DocumentLoader documentLoader;
-    private final GitClient gitClient;
-    private final Template template;
+    private final Path templateRoot;
+    private final Path targetRoot;
+    private final Configuration configuration;
 
-    FreeMarkerDocumentConverter(FileSystem fileSystem, DocumentLoader documentLoader, Path sourceRoot,
-                                GitClient gitClient) throws IOException {
+    public FreeMarkerDocumentConverter(FileSystem fileSystem, DocumentLoader documentLoader, Path targetRoot) {
         this.fileSystem = fileSystem;
         this.documentLoader = documentLoader;
-        this.gitClient = gitClient;
-        try {
-            if (isCustomTemplateAvailable(sourceRoot)) {
-                template = loadCustomTemplate(sourceRoot);
-            } else {
-                template = loadDefaultTemplate();
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Could not load built-in template", e);
-        }
-    }
-
-    boolean isCustomTemplateAvailable(Path sourceRoot) {
-        return fileSystem.exists(sourceRoot.resolve(CUSTOM_PAGE_TEMPLATE));
-    }
-
-    Template loadDefaultTemplate() throws IOException {
-        Configuration configuration = createTemplateConfiguration();
-        configuration.setClassForTemplateLoading(FreeMarkerDocumentConverter.class, TEMPLATE_PATH);
-        return configuration.getTemplate(DEFAULT_PAGE_TEMPLATE);
-
-    }
-
-    Template loadCustomTemplate(Path sourceRoot) throws IOException {
-        Configuration configuration = createTemplateConfiguration();
-        configuration.setTemplateLoader(new CustomTemplateLoader(fileSystem, sourceRoot));
-        return configuration.getTemplate(CUSTOM_PAGE_TEMPLATE);
-    }
-
-    private Configuration createTemplateConfiguration() {
-        final Configuration configuration = new Configuration(Configuration.VERSION_2_3_21);
+        this.templateRoot = documentLoader.getSourceRoot();
+        this.targetRoot = targetRoot;
+        this.configuration = new Configuration(Configuration.VERSION_2_3_21);
         configuration.setDefaultEncoding("UTF-8");
         configuration.setDateTimeFormat("long");
         configuration.setSharedVariable("link", new LocalLinkRewriteDirective());
-        return configuration;
+        configuration.setTemplateLoader(new MultiTemplateLoader(new TemplateLoader[]{
+                new ClassTemplateLoader(FreeMarkerDocumentConverter.class, TEMPLATE_PATH),
+                new CustomTemplateLoader(fileSystem, templateRoot)
+        }));
     }
 
     @Override
-    public boolean isCustomTemplateChanged(Path sourceRoot, Path targetRoot) throws IOException {
-        if (isCustomTemplateAvailable(sourceRoot)) {
+    public boolean isCustomTemplateChanged() throws IOException {
+        if (isCustomTemplateAvailable()) {
             final long touchFileTimestamp = fileSystem.getTouchFileLastModifiedInMillis(targetRoot);
             final long customTemplateTimestamp = fileSystem.getLastModifiedInMillis(
-                    sourceRoot.resolve(CUSTOM_PAGE_TEMPLATE));
+                    templateRoot.resolve(CUSTOM_PAGE_TEMPLATE));
             return customTemplateTimestamp > touchFileTimestamp;
         }
         return false;
@@ -116,17 +93,38 @@ class FreeMarkerDocumentConverter implements DocumentConverter {
     }
 
     @Override
-    public void convert(Path sourceRoot, Path targetRoot, Path path) throws IOException {
+    public void convert(Path path) throws IOException {
         Logger.getGlobal().log(Level.FINE, String.format("Converting '%s' from Markdown to HTML.", path));
         final Path targetFile = targetRoot.resolve(getConvertedFileName(path));
         try (final Writer writer = fileSystem.newBufferedWriterForTextFile(targetFile)) {
-            final Document document = documentLoader.loadDocument(sourceRoot.resolve(path));
+            final Document document = documentLoader.loadDocument(path);
             final Map<String, Object> model = createPageModel(path, document);
+            final Template template = loadTemplate();
             template.process(model, writer);
         } catch (TemplateException e) {
             Logger.getGlobal().log(Level.SEVERE, String.format("There was a problem in your custom page template. " +
                     "All converted pages are probably broken! The cause: %s", e.getMessage()), e);
         }
+    }
+
+    private Template loadTemplate() throws IOException {
+        if (isCustomTemplateAvailable()) {
+            return loadCustomTemplate();
+        } else {
+            return loadDefaultTemplate();
+        }
+    }
+
+    boolean isCustomTemplateAvailable() {
+        return fileSystem.exists(templateRoot.resolve(CUSTOM_PAGE_TEMPLATE));
+    }
+
+    Template loadCustomTemplate() throws IOException {
+        return configuration.getTemplate(CUSTOM_PAGE_TEMPLATE);
+    }
+
+    Template loadDefaultTemplate() throws IOException {
+        return configuration.getTemplate(DEFAULT_PAGE_TEMPLATE);
     }
 
     Map<String, Object> createPageModel(Path path, Document document) {
@@ -135,7 +133,7 @@ class FreeMarkerDocumentConverter implements DocumentConverter {
         model.put("path", path);
         model.put("title", document.getTitle());
         model.put("content", document.toHtml());
-        model.put("history", gitClient.getHistory(path));
+        model.put("history", document.getHistory());
         return model;
     }
 }

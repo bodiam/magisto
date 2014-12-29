@@ -16,6 +16,7 @@
 
 package nl.ulso.magisto.document.markdown;
 
+import nl.ulso.magisto.document.DummyHistory;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -23,7 +24,7 @@ import static org.junit.Assert.assertEquals;
 public class MarkdownDocumentTest {
 
     private MarkdownDocument createMarkdownDocument(String text) {
-        return new MarkdownDocument(text.toCharArray());
+        return new MarkdownDocument(text.toCharArray(), new DummyHistory());
     }
 
     @Test

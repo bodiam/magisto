@@ -30,11 +30,16 @@ import static org.junit.Assert.assertEquals;
 
 public class ConvertSourceActionTest {
 
-    private final DummyDocumentConverter fileConverter = new DummyDocumentConverter();
+    private DummyDocumentConverter fileConverter;
+    private Path sourceRoot;
+    private Path targetRoot;
 
     @Before
     public void setUp() throws Exception {
-        fileConverter.clearRecordings();
+        final DummyFileSystem fileSystem = new DummyFileSystem();
+        sourceRoot = fileSystem.resolveSourceDirectory("source");
+        targetRoot = fileSystem.prepareTargetDirectory("target");
+        fileConverter = new DummyDocumentConverter(sourceRoot, targetRoot, false);
     }
 
     @Test
@@ -52,8 +57,6 @@ public class ConvertSourceActionTest {
     @Test
     public void testCopy() throws Exception {
         final DummyFileSystem fileSystem = new DummyFileSystem();
-        final Path sourceRoot = fileSystem.resolveSourceDirectory("source");
-        final Path targetRoot = fileSystem.prepareTargetDirectory("target");
         final DummyPathEntry entry = createPathEntry("file.convert");
         new ConvertSourceAction(entry.getPath(), fileConverter).perform(fileSystem, sourceRoot, targetRoot);
         assertEquals("source:file.convert -> target:file.converted", fileConverter.getLoggedConversions());

@@ -26,5 +26,7 @@ public interface DocumentLoader {
 
     boolean supports(Path path);
 
+    public Path getSourceRoot();
+
     public Document loadDocument(Path path) throws IOException;
 }

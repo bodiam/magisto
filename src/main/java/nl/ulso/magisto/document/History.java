@@ -17,23 +17,12 @@
 package nl.ulso.magisto.document;
 
 import java.io.IOException;
-import java.nio.file.Path;
+import java.util.List;
 
-/**
- * Converts files from one format to another.
- * <p>
- * <strong>Important!</strong>: The file name of the converted file must overlap with the original name as much as
- * possible. Only their extensions may differ. Otherwise the lexicographical ordering will not match, and the path
- * comparison algorithm in the Magisto class will go out of whack!
- * </p>
- */
-public interface DocumentConverter {
+public interface History {
 
-    String getTargetExtension();
+    public List<Commit> getCommits() throws IOException;
 
-    Path getConvertedFileName(Path path);
+    public Commit getLastCommit() throws IOException;
 
-    void convert(Path path) throws IOException;
-
-    boolean isCustomTemplateChanged() throws IOException;
 }

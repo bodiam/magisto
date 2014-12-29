@@ -17,14 +17,13 @@
 package nl.ulso.magisto.document.markdown;
 
 import nl.ulso.magisto.document.Document;
+import nl.ulso.magisto.git.DummyGitClient;
 import nl.ulso.magisto.io.DummyFileSystem;
 import org.junit.Before;
 import org.junit.Test;
 
 import static nl.ulso.magisto.io.Paths.createPath;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class MarkdownDocumentLoaderTest {
 
@@ -34,7 +33,8 @@ public class MarkdownDocumentLoaderTest {
     @Before
     public void setUp() throws Exception {
         fileSystem = new DummyFileSystem();
-        loader = new MarkdownDocumentLoader(fileSystem);
+        final DummyGitClient gitClient = new DummyGitClient();
+        loader = new MarkdownDocumentLoader(fileSystem, fileSystem.resolveSourceDirectory("source"), gitClient);
     }
 
     @Test
@@ -65,7 +65,7 @@ public class MarkdownDocumentLoaderTest {
     @Test
     public void testLoadDocument() throws Exception {
         fileSystem.registerTextFileForBufferedReader("test.md", "# Test\n\nThis is a test");
-        final Document document = loader.loadDocument(fileSystem.prepareTargetDirectory("").resolve("test.md"));
+        final Document document = loader.loadDocument(createPath("test.md"));
         assertEquals("Test", document.getTitle());
     }
 }

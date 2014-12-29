@@ -16,20 +16,23 @@
 
 package nl.ulso.magisto.document;
 
-import nl.ulso.magisto.io.FileSystem;
-
 import java.nio.file.Path;
 
-public class DummyDocumentConverterFactory implements DocumentConverterFactory {
+public class DummyDocumentSupportFactory implements DocumentSupportFactory {
 
-    private boolean isCustomTemplateChanged = false;
+    private boolean customTemplateChanged = false;
 
     @Override
-    public DocumentConverter create(FileSystem fileSystem, DocumentLoader documentLoader, Path sourceRoot) {
-        return new DummyDocumentConverter(isCustomTemplateChanged);
+    public DocumentLoader createDocumentLoader(Path sourceRoot) {
+        return new DummyDocumentLoader(sourceRoot);
+    }
+
+    @Override
+    public DocumentConverter createDocumentConverter(Path sourceRoot, Path targetRoot) {
+        return new DummyDocumentConverter(sourceRoot, targetRoot, customTemplateChanged);
     }
 
     public void setCustomTemplateChanged() {
-        isCustomTemplateChanged = true;
+        this.customTemplateChanged = true;
     }
 }

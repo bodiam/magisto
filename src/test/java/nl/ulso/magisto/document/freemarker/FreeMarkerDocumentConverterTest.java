@@ -18,8 +18,8 @@ package nl.ulso.magisto.document.freemarker;
 
 import freemarker.template.Template;
 import nl.ulso.magisto.document.DummyDocumentLoader;
+import nl.ulso.magisto.document.DummyHistory;
 import nl.ulso.magisto.document.markdown.MarkdownDocument;
-import nl.ulso.magisto.git.DummyGitClient;
 import nl.ulso.magisto.io.DummyFileSystem;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,21 +33,19 @@ import static nl.ulso.magisto.io.DummyPathEntry.createPathEntry;
 import static nl.ulso.magisto.io.Paths.createPath;
 import static org.junit.Assert.*;
 
-public class FreeMarkerDocumentConverterFactoryTest {
+public class FreeMarkerDocumentConverterTest {
 
     private FreeMarkerDocumentConverter fileConverter;
-    private DummyFileSystem fileSystemAccessor;
-    private DummyGitClient gitClient;
-    private Path sourcePath;
+    private DummyFileSystem fileSystem;
+    private Path sourceRoot;
+    private Path targetRoot;
 
     @Before
     public void setUp() throws Exception {
-        this.fileSystemAccessor = new DummyFileSystem();
-        this.sourcePath = fileSystemAccessor.resolveSourceDirectory("source");
-        fileSystemAccessor.prepareTargetDirectory("target");
-        this.gitClient = new DummyGitClient();
-        this.fileConverter = new FreeMarkerDocumentConverter(fileSystemAccessor, new DummyDocumentLoader(),
-                createPath("."), gitClient);
+        this.fileSystem = new DummyFileSystem();
+        this.sourceRoot = fileSystem.resolveSourceDirectory("source");
+        this.targetRoot = fileSystem.prepareTargetDirectory("target");
+        this.fileConverter = new FreeMarkerDocumentConverter(fileSystem, new DummyDocumentLoader(sourceRoot), targetRoot);
     }
 
     @Test
@@ -60,7 +58,7 @@ public class FreeMarkerDocumentConverterFactoryTest {
         final Date start = new Date();
         TimeUnit.SECONDS.sleep(1);
         final Map<String, Object> model = fileConverter.createPageModel(createPath("test.md"),
-                new MarkdownDocument("# Title\n\nParagraph".toCharArray()));
+                new MarkdownDocument("# Title\n\nParagraph".toCharArray(), new DummyHistory()));
         TimeUnit.SECONDS.sleep(1);
         final Date end = new Date();
         final Date timestamp = (Date) model.get("timestamp");
@@ -74,9 +72,9 @@ public class FreeMarkerDocumentConverterFactoryTest {
 
     @Test
     public void testConvertMarkdownFile() throws Exception {
-        fileSystemAccessor.registerTextFileForBufferedReader("test.md", String.format("# Title%n%nParagraph"));
-        fileConverter.convert(createPath("."), createPath("."), createPath("test.md"));
-        final String output = fileSystemAccessor.getTextFileFromBufferedWriter("test.html");
+        fileSystem.registerTextFileForBufferedReader("test.md", String.format("# Title%n%nParagraph"));
+        fileConverter.convert(createPath("test.md"));
+        final String output = fileSystem.getTextFileFromBufferedWriter("test.html");
         assertNotNull(output);
         System.out.println("output = " + output);
     }
@@ -90,37 +88,35 @@ public class FreeMarkerDocumentConverterFactoryTest {
 
     @Test
     public void testLoadCustomTemplate() throws Exception {
-        fileSystemAccessor.addSourcePaths(createPathEntry(".page.ftl"));
-        fileSystemAccessor.registerTextFileForBufferedReader(".page.ftl", "CUSTOM TEMPLATE");
-        final Template template = fileConverter.loadCustomTemplate(sourcePath);
+        fileSystem.addSourcePaths(createPathEntry(".page.ftl"));
+        fileSystem.registerTextFileForBufferedReader(".page.ftl", "CUSTOM TEMPLATE");
+        final Template template = fileConverter.loadCustomTemplate();
         assertNotNull(template);
         assertEquals(".page.ftl", template.getName());
     }
 
     @Test
     public void testConvertLocalLinkInTemplate() throws Exception {
-        fileSystemAccessor.addSourcePaths(createPathEntry(".page.ftl"));
-        fileSystemAccessor.registerTextFileForBufferedReader(".page.ftl", "<@link path=\"/static/favicon.ico\"/>");
-        fileSystemAccessor.registerTextFileForBufferedReader("test.md", String.format("# Title%n%nParagraph"));
-        this.fileConverter = new FreeMarkerDocumentConverter(fileSystemAccessor, new DummyDocumentLoader(),
-                createPath("."), gitClient);
-        fileConverter.convert(createPath("."), createPath("."), createPath("dir", "test.md"));
-        final String output = fileSystemAccessor.getTextFileFromBufferedWriter("test.html");
+        fileSystem.addSourcePaths(createPathEntry(".page.ftl"));
+        fileSystem.registerTextFileForBufferedReader(".page.ftl", "<@link path=\"/static/favicon.ico\"/>");
+        fileSystem.registerTextFileForBufferedReader("test.md", String.format("# Title%n%nParagraph"));
+        this.fileConverter = new FreeMarkerDocumentConverter(fileSystem, new DummyDocumentLoader(sourceRoot), targetRoot);
+        fileConverter.convert(createPath("dir", "test.md"));
+        final String output = fileSystem.getTextFileFromBufferedWriter("test.html");
         assertEquals("../static/favicon.ico", output);
     }
 
     @Test
     public void testCustomTemplateHasNotChanged() throws Exception {
-        fileSystemAccessor.addSourcePaths(createPathEntry(".page.ftl"));
-        assertFalse(fileConverter.isCustomTemplateChanged(createPath("."), createPath(".")));
+        fileSystem.addSourcePaths(createPathEntry(".page.ftl"));
+        assertFalse(fileConverter.isCustomTemplateChanged());
     }
 
     @Test
     public void testCustomTemplateHasChanged() throws Exception {
-        fileSystemAccessor.markTouchFile();
-        final Path sourceRoot = fileSystemAccessor.resolveSourceDirectory(".");
-        fileSystemAccessor.addSourcePaths(createPathEntry(sourceRoot.resolve(".page.ftl")));
-        fileSystemAccessor.registerTextFileForBufferedReader(".page.ftl", "CUSTOM TEMPLATE");
-        assertTrue(fileConverter.isCustomTemplateChanged(sourceRoot, createPath(".")));
+        fileSystem.markTouchFile();
+        fileSystem.addSourcePaths(createPathEntry(sourceRoot.resolve(".page.ftl")));
+        fileSystem.registerTextFileForBufferedReader(".page.ftl", "CUSTOM TEMPLATE");
+        assertTrue(fileConverter.isCustomTemplateChanged());
     }
 }

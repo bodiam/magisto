@@ -17,10 +17,9 @@
 package nl.ulso.magisto;
 
 import nl.ulso.magisto.action.RealActionFactory;
-import nl.ulso.magisto.document.freemarker.FreeMarkerDocumentConverterFactory;
-import nl.ulso.magisto.document.markdown.MarkdownDocumentLoader;
-import nl.ulso.magisto.git.DummyGitClient;
+import nl.ulso.magisto.document.RealDocumentSupportFactory;
 import nl.ulso.magisto.git.GitClient;
+import nl.ulso.magisto.git.GitClientStub;
 import nl.ulso.magisto.git.JGitClient;
 import nl.ulso.magisto.io.RealFileSystem;
 import org.apache.maven.plugin.AbstractMojo;
@@ -61,8 +60,9 @@ public class MagistoMojo extends AbstractMojo {
         final Handler consoleHandler = configureLogging(verbose);
         final GitClient gitClient = createGitClient(sourceDirectory);
         final RealFileSystem fileSystem = new RealFileSystem();
-        final Magisto magisto = new Magisto(forceOverwrite, fileSystem, new RealActionFactory(),
-                new MarkdownDocumentLoader(fileSystem), new FreeMarkerDocumentConverterFactory(gitClient));
+        final RealActionFactory actionFactory = new RealActionFactory();
+        final RealDocumentSupportFactory documentFactory = new RealDocumentSupportFactory(fileSystem, gitClient);
+        final Magisto magisto = new Magisto(forceOverwrite, fileSystem, actionFactory, documentFactory);
         try {
             magisto.run(sourceDirectory, targetDirectory).log();
         } catch (IOException e) {
@@ -72,12 +72,12 @@ public class MagistoMojo extends AbstractMojo {
         }
     }
 
-    private GitClient createGitClient(String sourceDirectory) throws MojoFailureException {
+    private GitClient createGitClient(String sourceDirectory) {
         try {
             return new JGitClient(sourceDirectory);
         } catch (IOException e) {
             Logger.getGlobal().log(Level.INFO, "No Git repository found. Version information will not be available.");
-            return new DummyGitClient();
+            return new GitClientStub();
         }
     }
 

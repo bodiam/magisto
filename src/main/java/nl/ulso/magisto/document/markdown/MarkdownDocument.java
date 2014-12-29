@@ -17,6 +17,7 @@
 package nl.ulso.magisto.document.markdown;
 
 import nl.ulso.magisto.document.Document;
+import nl.ulso.magisto.document.History;
 import org.pegdown.Extensions;
 import org.pegdown.PegDownProcessor;
 import org.pegdown.ToHtmlSerializer;
@@ -36,8 +37,10 @@ public class MarkdownDocument implements Document {
 
     private final RootNode rootNode;
     private final String title;
+    private final History history;
 
-    public MarkdownDocument(char[] markdownText) {
+    public MarkdownDocument(char[] markdownText, History history) {
+        this.history = history;
         rootNode = PROCESSOR.get().parseMarkdown(markdownText);
         title = new TitleFinder().extractTitle(rootNode);
     }
@@ -49,5 +52,10 @@ public class MarkdownDocument implements Document {
 
     public String toHtml() {
         return new ToHtmlSerializer(new MarkdownLinkRenderer()).toHtml(rootNode);
+    }
+
+    @Override
+    public History getHistory() {
+        return history;
     }
 }

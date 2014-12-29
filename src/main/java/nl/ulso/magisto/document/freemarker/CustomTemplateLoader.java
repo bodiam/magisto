@@ -25,16 +25,17 @@ import java.io.Reader;
 import java.nio.file.Path;
 
 /**
- * FreeMarker {@link TemplateLoader} that loads templates from the file system using the {@link nl.ulso.magisto.io.FileSystem}.
+ * FreeMarker {@link TemplateLoader} that loads templates from the file system using the
+ * {@link nl.ulso.magisto.io.FileSystem}.
  */
 class CustomTemplateLoader implements TemplateLoader {
 
     private final FileSystem fileSystem;
-    private final Path root;
+    private final Path templateRoot;
 
-    public CustomTemplateLoader(FileSystem fileSystem, Path rootPath) {
+    public CustomTemplateLoader(FileSystem fileSystem, Path templateRoot) {
         this.fileSystem = fileSystem;
-        this.root = rootPath;
+        this.templateRoot = templateRoot;
     }
 
     @Override
@@ -43,7 +44,7 @@ class CustomTemplateLoader implements TemplateLoader {
         if (parts.length != 1) {
             throw new UnsupportedOperationException("Template sources in directories are not supported: " + name);
         }
-        final Path path = root.resolve(Paths.createPath(parts[0]));
+        final Path path = templateRoot.resolve(Paths.createPath(parts[0]));
         if (fileSystem.exists(path)) {
             return path;
         }

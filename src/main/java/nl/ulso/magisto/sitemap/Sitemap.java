@@ -109,7 +109,7 @@ public class Sitemap {
      * @param changes The list of changes to apply.
      * @return A new sitemap, based on the current one, with all changes applied.
      */
-    public Sitemap apply(List<Change> changes, DocumentLoader documentLoader, Path sourceRoot) throws IOException {
+    public Sitemap apply(List<Change> changes, DocumentLoader documentLoader) throws IOException {
         final Set<Page> pages = new HashSet<>(this.pages);
         for (Change change : changes) {
             final Path path = change.getPath();
@@ -117,7 +117,7 @@ public class Sitemap {
                 case DELETE:
                     pages.remove(new Page(path));
                 case INSERT_OR_UPDATE:
-                    final Page page = new Page(path, documentLoader.loadDocument(sourceRoot.resolve(path)).getTitle());
+                    final Page page = new Page(path, documentLoader.loadDocument(path).getTitle());
                     pages.remove(page);
                     pages.add(page);
                     break;

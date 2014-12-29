@@ -25,6 +25,12 @@ import java.util.Set;
 
 public class DummyDocumentLoader implements DocumentLoader {
 
+    private final Path sourceRoot;
+
+    public DummyDocumentLoader(Path sourceRoot) {
+        this.sourceRoot = sourceRoot;
+    }
+
     @Override
     public Set<String> getSupportedExtensions() {
         return Collections.unmodifiableSet(new HashSet<>(Arrays.asList("convert")));
@@ -36,17 +42,12 @@ public class DummyDocumentLoader implements DocumentLoader {
     }
 
     @Override
-    public Document loadDocument(Path path) throws IOException {
-        return new Document() {
-            @Override
-            public String getTitle() {
-                return "Dummy document";
-            }
+    public Path getSourceRoot() {
+        return sourceRoot;
+    }
 
-            @Override
-            public String toHtml() {
-                return "";
-            }
-        };
+    @Override
+    public Document loadDocument(Path path) throws IOException {
+        return new DummyDocument(path);
     }
 }

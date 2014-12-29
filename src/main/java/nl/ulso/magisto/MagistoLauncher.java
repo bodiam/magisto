@@ -20,10 +20,9 @@ import com.lexicalscope.jewel.cli.ArgumentValidationException;
 import com.lexicalscope.jewel.cli.CliFactory;
 import com.lexicalscope.jewel.cli.ValidationFailure;
 import nl.ulso.magisto.action.RealActionFactory;
-import nl.ulso.magisto.document.freemarker.FreeMarkerDocumentConverterFactory;
-import nl.ulso.magisto.document.markdown.MarkdownDocumentLoader;
-import nl.ulso.magisto.git.DummyGitClient;
+import nl.ulso.magisto.document.RealDocumentSupportFactory;
 import nl.ulso.magisto.git.GitClient;
+import nl.ulso.magisto.git.GitClientStub;
 import nl.ulso.magisto.git.JGitClient;
 import nl.ulso.magisto.io.RealFileSystem;
 
@@ -42,7 +41,7 @@ import java.util.logging.*;
  * </ul>
  * </p>
  */
-public class Launcher {
+public class MagistoLauncher {
 
     private static final String WORKING_DIRECTORY = System.getProperty("user.dir");
 
@@ -92,7 +91,7 @@ public class Launcher {
             return new JGitClient(sourceDirectory);
         } catch (IOException e) {
             Logger.getGlobal().log(Level.INFO, "No Git repository found. Version information will not be available.");
-            return new DummyGitClient();
+            return new GitClientStub();
         }
     }
 
@@ -101,9 +100,9 @@ public class Launcher {
             return DUMMY_MAGISTO;
         }
         final RealFileSystem fileSystem = new RealFileSystem();
-        return new Magisto(forceOverwrite, fileSystem, new RealActionFactory(),
-                new MarkdownDocumentLoader(fileSystem),
-                new FreeMarkerDocumentConverterFactory(gitClient));
+        final RealActionFactory actionFactory = new RealActionFactory();
+        final RealDocumentSupportFactory documentFactory = new RealDocumentSupportFactory(fileSystem, gitClient);
+        return new Magisto(forceOverwrite, fileSystem, actionFactory, documentFactory);
     }
 
     private static void run(Magisto magisto, String sourceDirectory, String targetDirectory) {

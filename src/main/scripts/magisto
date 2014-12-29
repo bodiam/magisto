@@ -32,4 +32,4 @@ for LIB in `ls $LIBDIR`; do
     CLASSPATH="$LIBDIR/$LIB":$CLASSPATH
 done
 
-exec java -classpath $CLASSPATH nl.ulso.magisto.Launcher $*
+exec java -classpath $CLASSPATH nl.ulso.magisto.MagistoLauncher $*

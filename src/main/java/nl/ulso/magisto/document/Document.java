@@ -24,4 +24,6 @@ public interface Document {
     String getTitle();
 
     String toHtml();
+
+    History getHistory();
 }

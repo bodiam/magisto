@@ -16,24 +16,28 @@
 
 package nl.ulso.magisto.document;
 
-import java.io.IOException;
 import java.nio.file.Path;
 
-/**
- * Converts files from one format to another.
- * <p>
- * <strong>Important!</strong>: The file name of the converted file must overlap with the original name as much as
- * possible. Only their extensions may differ. Otherwise the lexicographical ordering will not match, and the path
- * comparison algorithm in the Magisto class will go out of whack!
- * </p>
- */
-public interface DocumentConverter {
+public class DummyDocument implements Document {
 
-    String getTargetExtension();
+    private final String fileName;
 
-    Path getConvertedFileName(Path path);
+    public DummyDocument(Path path) {
+        fileName = path.getFileName().toString();
+    }
 
-    void convert(Path path) throws IOException;
+    @Override
+    public String getTitle() {
+        return fileName;
+    }
 
-    boolean isCustomTemplateChanged() throws IOException;
+    @Override
+    public String toHtml() {
+        return "<html><body>" + fileName + "</body></html>";
+    }
+
+    @Override
+    public History getHistory() {
+        return new DummyHistory();
+    }
 }

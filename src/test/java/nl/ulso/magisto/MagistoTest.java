@@ -17,8 +17,7 @@
 package nl.ulso.magisto;
 
 import nl.ulso.magisto.action.DummyActionFactory;
-import nl.ulso.magisto.document.DummyDocumentConverterFactory;
-import nl.ulso.magisto.document.DummyDocumentLoader;
+import nl.ulso.magisto.document.DummyDocumentSupportFactory;
 import nl.ulso.magisto.io.DummyFileSystem;
 import nl.ulso.magisto.io.DummyPathEntry;
 import nl.ulso.magisto.sitemap.SitemapTest;
@@ -35,17 +34,15 @@ public class MagistoTest {
 
     private DummyFileSystem fileSystem;
     private DummyActionFactory actionFactory;
-    private DummyDocumentLoader documentLoader;
-    private DummyDocumentConverterFactory fileConverterFactory;
+    private DummyDocumentSupportFactory documentFactory;
     private Magisto magisto;
 
     @Before
     public void setUp() throws Exception {
         fileSystem = new DummyFileSystem();
         actionFactory = new DummyActionFactory();
-        documentLoader = new DummyDocumentLoader();
-        fileConverterFactory = new DummyDocumentConverterFactory();
-        magisto = new Magisto(false, fileSystem, actionFactory, documentLoader, fileConverterFactory);
+        documentFactory = new DummyDocumentSupportFactory();
+        magisto = new Magisto(false, fileSystem, actionFactory, documentFactory);
     }
 
     @Test
@@ -113,8 +110,8 @@ public class MagistoTest {
     @Test
     public void testMultipleSourceAndTargetFilesWithDetectedOverwrite() throws Exception {
         prepareMultipleSourceAndTargetFiles();
-        fileConverterFactory.setCustomTemplateChanged();
-        magisto = new Magisto(false, fileSystem, actionFactory, documentLoader, fileConverterFactory);
+        documentFactory.setCustomTemplateChanged();
+        magisto = new Magisto(false, fileSystem, actionFactory, documentFactory);
         runTest(
                 2, // sameFile1, sameFile2
                 1, // baz.txt
@@ -127,7 +124,7 @@ public class MagistoTest {
 
     @Test
     public void testMultipleSourceAndTargetFilesWithForcedOverwrite() throws Exception {
-        magisto = new Magisto(true, fileSystem, actionFactory, documentLoader, fileConverterFactory);
+        magisto = new Magisto(true, fileSystem, actionFactory, documentFactory);
         prepareMultipleSourceAndTargetFiles();
         runTest(
                 0, // no skips: forced overwrite

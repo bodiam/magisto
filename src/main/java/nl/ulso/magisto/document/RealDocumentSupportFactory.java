@@ -14,29 +14,32 @@
  * limitations under the License
  */
 
-package nl.ulso.magisto.document.freemarker;
+package nl.ulso.magisto.document;
 
-import nl.ulso.magisto.document.DocumentConverter;
-import nl.ulso.magisto.document.DocumentConverterFactory;
-import nl.ulso.magisto.document.DocumentLoader;
+import nl.ulso.magisto.document.freemarker.FreeMarkerDocumentConverter;
+import nl.ulso.magisto.document.markdown.MarkdownDocumentLoader;
 import nl.ulso.magisto.git.GitClient;
 import nl.ulso.magisto.io.FileSystem;
 
-import java.io.IOException;
 import java.nio.file.Path;
 
-/**
- * Default implementation of the {@link nl.ulso.magisto.document.DocumentConverterFactory}.
- */
-public class FreeMarkerDocumentConverterFactory implements DocumentConverterFactory {
+public class RealDocumentSupportFactory implements DocumentSupportFactory {
+
+    private final FileSystem filesystem;
     private final GitClient gitClient;
 
-    public FreeMarkerDocumentConverterFactory(GitClient gitClient) {
+    public RealDocumentSupportFactory(FileSystem filesystem, GitClient gitClient) {
+        this.filesystem = filesystem;
         this.gitClient = gitClient;
     }
 
     @Override
-    public DocumentConverter create(FileSystem fileSystem, DocumentLoader documentLoader, Path sourceRoot) throws IOException {
-        return new FreeMarkerDocumentConverter(fileSystem, documentLoader, sourceRoot, gitClient);
+    public DocumentLoader createDocumentLoader(Path sourceRoot) {
+        return new MarkdownDocumentLoader(filesystem, sourceRoot, gitClient);
+    }
+
+    @Override
+    public DocumentConverter createDocumentConverter(Path sourceRoot, Path targetRoot) {
+        return new FreeMarkerDocumentConverter(filesystem, createDocumentLoader(sourceRoot), targetRoot);
     }
 }

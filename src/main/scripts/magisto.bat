@@ -7,4 +7,4 @@ SET CLASSPATH=""
 
 for /F %%a in ('dir /B /S %LIBS%') DO (SET CLASSPATH=!CLASSPATH!;%%a)
 
-call java -cp %CLASSPATH% nl.ulso.magisto.Launcher $*
+call java -cp %CLASSPATH% nl.ulso.magisto.MagistoLauncher $*

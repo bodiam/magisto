@@ -16,15 +16,11 @@
 
 package nl.ulso.magisto.document;
 
-import nl.ulso.magisto.io.FileSystem;
-
-import java.io.IOException;
 import java.nio.file.Path;
 
-/**
- * Factory for converters.
- */
-public interface DocumentConverterFactory {
+public interface DocumentSupportFactory {
 
-    DocumentConverter create(FileSystem fileSystem, DocumentLoader documentLoader, Path sourceRoot) throws IOException;
+    DocumentLoader createDocumentLoader(Path sourceRoot);
+
+    DocumentConverter createDocumentConverter(Path sourceRoot, Path targetRoot);
 }

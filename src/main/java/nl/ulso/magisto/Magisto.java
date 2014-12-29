@@ -21,8 +21,8 @@ import nl.ulso.magisto.action.ActionCallback;
 import nl.ulso.magisto.action.ActionFactory;
 import nl.ulso.magisto.action.ActionSet;
 import nl.ulso.magisto.document.DocumentConverter;
-import nl.ulso.magisto.document.DocumentConverterFactory;
 import nl.ulso.magisto.document.DocumentLoader;
+import nl.ulso.magisto.document.DocumentSupportFactory;
 import nl.ulso.magisto.io.FileSystem;
 import nl.ulso.magisto.sitemap.Sitemap;
 
@@ -43,16 +43,14 @@ class Magisto {
     private final boolean forceCopy;
     private final FileSystem fileSystem;
     private final ActionFactory actionFactory;
-    private final DocumentLoader documentLoader;
-    private final DocumentConverterFactory documentConverterFactory;
+    private final DocumentSupportFactory documentSupportFactory;
 
     public Magisto(boolean forceOverwrite, FileSystem fileSystem, ActionFactory actionFactory,
-                   DocumentLoader documentLoader, DocumentConverterFactory documentConverterFactory) {
+                   DocumentSupportFactory documentSupportFactory) {
         this.forceCopy = forceOverwrite;
         this.fileSystem = fileSystem;
         this.actionFactory = actionFactory;
-        this.documentLoader = documentLoader;
-        this.documentConverterFactory = documentConverterFactory;
+        this.documentSupportFactory = documentSupportFactory;
     }
 
     /*
@@ -78,7 +76,8 @@ class Magisto {
             addSourceActions(actions, sourceRoot, targetRoot, forceCopy || currentSitemap.isEmpty());
             addStaticActions(actions, sourceRoot, targetRoot);
 
-            final Sitemap updatedSitemap = currentSitemap.apply(actions.computeChanges(), documentLoader, sourceRoot);
+            final Sitemap updatedSitemap = currentSitemap.apply(actions.computeChanges(),
+                    documentSupportFactory.createDocumentLoader(sourceRoot));
 
             actions.performAll(fileSystem, sourceRoot, targetRoot, new ActionCallback() {
                 @Override
@@ -110,10 +109,11 @@ class Magisto {
     actions on the source files, to detect all files in the target directory that weren't updated. This balanced line
     algorithm is simpler. It's a bit faster too.
      */
-    private void addSourceActions(ActionSet actions, Path sourceRoot, Path targetRoot, boolean forceOverwrite) throws IOException {
-        final DocumentConverter documentConverter = documentConverterFactory.create(fileSystem, documentLoader, sourceRoot);
-        final boolean forceConvert = forceOverwrite
-                || documentConverter.isCustomTemplateChanged(sourceRoot, targetRoot);
+    private void addSourceActions(ActionSet actions, Path sourceRoot, Path targetRoot, boolean forceOverwrite)
+            throws IOException {
+        final DocumentLoader documentLoader = documentSupportFactory.createDocumentLoader(sourceRoot);
+        final DocumentConverter documentConverter = documentSupportFactory.createDocumentConverter(sourceRoot, targetRoot);
+        final boolean forceConvert = forceOverwrite || documentConverter.isCustomTemplateChanged();
         final Iterator<Path> sources = fileSystem.findAllPaths(sourceRoot,
                 prioritizeOnExtension(documentLoader.getSupportedExtensions())).iterator();
         final Iterator<Path> targets = fileSystem.findAllPaths(targetRoot,
@@ -122,7 +122,7 @@ class Magisto {
         Path source = nullableNext(sources);
         Path target = nullableNext(targets);
         while (source != null || target != null) {
-            final int comparison = compareNullablePaths(source, target, documentConverter);
+            final int comparison = compareNullablePaths(source, target, documentLoader, documentConverter);
 
             if (comparison == 0) { // Corresponding source and target
                 if (isSourceNewerThanTarget(sourceRoot.resolve(source), targetRoot.resolve(target))) {
@@ -177,7 +177,7 @@ class Magisto {
         return paths.hasNext() ? paths.next() : null;
     }
 
-    private int compareNullablePaths(Path source, Path target, DocumentConverter documentConverter) {
+    private int compareNullablePaths(Path source, Path target, DocumentLoader documentLoader, DocumentConverter documentConverter) {
         if (source == null) {
             return 1;
         }

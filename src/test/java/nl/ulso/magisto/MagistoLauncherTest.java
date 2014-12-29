@@ -17,8 +17,7 @@
 package nl.ulso.magisto;
 
 import nl.ulso.magisto.action.DummyActionFactory;
-import nl.ulso.magisto.document.DummyDocumentConverterFactory;
-import nl.ulso.magisto.document.DummyDocumentLoader;
+import nl.ulso.magisto.document.DummyDocumentSupportFactory;
 import nl.ulso.magisto.io.DummyFileSystem;
 import org.junit.After;
 import org.junit.Before;
@@ -36,7 +35,7 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
-public class LauncherTest {
+public class MagistoLauncherTest {
 
     @Rule
     public final ExpectedSystemExit systemExit = ExpectedSystemExit.none();
@@ -60,16 +59,16 @@ public class LauncherTest {
     @Test
     public void testNoProgramArguments() throws Exception {
         systemExit.expectSystemExitWithStatus(-1);
-        Launcher.setDummyMagistoForTesting(new DummyMagisto());
-        Launcher.main(new String[]{});
+        MagistoLauncher.setDummyMagistoForTesting(new DummyMagisto());
+        MagistoLauncher.main(new String[]{});
         assertThat(errorLog.getLog(), containsString("invalid arguments"));
         assertThat(outputLog.getLog(), is(""));
     }
 
     @Test
     public void testValidProgramArguments() throws Exception {
-        Launcher.setDummyMagistoForTesting(new DummyMagisto());
-        Launcher.main(new String[]{"-t", "foo"});
+        MagistoLauncher.setDummyMagistoForTesting(new DummyMagisto());
+        MagistoLauncher.main(new String[]{"-t", "foo"});
         assertThat(errorLog.getLog(), is(""));
         assertThat(outputLog.getLog(), is(""));
         assertThat(DummyLogHandler.getLog(), containsString("Done!"));
@@ -78,8 +77,8 @@ public class LauncherTest {
     @Test
     public void testIOExceptionDuringRun() throws Exception {
         systemExit.expectSystemExitWithStatus(-1);
-        Launcher.setDummyMagistoForTesting(new DummyMagistoWithIOException());
-        Launcher.main(new String[]{"-t", "foo"});
+        MagistoLauncher.setDummyMagistoForTesting(new DummyMagistoWithIOException());
+        MagistoLauncher.main(new String[]{"-t", "foo"});
         assertThat(errorLog.getLog(), containsString("Oops!"));
         assertThat(errorLog.getLog(), containsString("--expected--"));
         assertThat(outputLog.getLog(), is(""));
@@ -87,28 +86,28 @@ public class LauncherTest {
 
     @Test
     public void testSourceDirectoryNotDefined() throws Exception {
-        final Options options = Launcher.parseProgramOptions(new String[]{"-t", "foo"});
-        final String sourceDirectory = Launcher.resolveSourceDirectory(options);
+        final Options options = MagistoLauncher.parseProgramOptions(new String[]{"-t", "foo"});
+        final String sourceDirectory = MagistoLauncher.resolveSourceDirectory(options);
         assertThat(sourceDirectory, is(System.getProperty("user.dir")));
     }
 
     @Test
     public void testSourceDirectoryDefined() throws Exception {
-        final Options options = Launcher.parseProgramOptions(new String[]{"-s", "bar", "-t", "foo"});
-        final String sourceDirectory = Launcher.resolveSourceDirectory(options);
+        final Options options = MagistoLauncher.parseProgramOptions(new String[]{"-s", "bar", "-t", "foo"});
+        final String sourceDirectory = MagistoLauncher.resolveSourceDirectory(options);
         assertThat(sourceDirectory, is("bar"));
     }
 
     @Test
     public void testDefaultMagistoCreation() throws Exception {
-        Launcher.setDummyMagistoForTesting(null);
-        final Magisto magisto = Launcher.createMagisto(false, null);
+        MagistoLauncher.setDummyMagistoForTesting(null);
+        final Magisto magisto = MagistoLauncher.createMagisto(false, null);
         assertNotNull(magisto);
     }
 
     @Test
     public void testNormalLogging() throws Exception {
-        Launcher.configureLoggingSystem(false);
+        MagistoLauncher.configureLoggingSystem(false);
         Logger.getGlobal().log(Level.FINE, "FINE");
         Logger.getGlobal().log(Level.INFO, "INFO");
         final String log = DummyLogHandler.getLog();
@@ -118,7 +117,7 @@ public class LauncherTest {
 
     @Test
     public void testVerboseLogging() throws Exception {
-        Launcher.configureLoggingSystem(true);
+        MagistoLauncher.configureLoggingSystem(true);
         Logger.getGlobal().log(Level.FINE, "FINE");
         Logger.getGlobal().log(Level.INFO, "INFO");
         final String log = DummyLogHandler.getLog();
@@ -128,8 +127,7 @@ public class LauncherTest {
 
     private static final class DummyMagisto extends Magisto {
         private DummyMagisto() {
-            super(false, new DummyFileSystem(), new DummyActionFactory(), new DummyDocumentLoader(),
-                    new DummyDocumentConverterFactory());
+            super(false, new DummyFileSystem(), new DummyActionFactory(), new DummyDocumentSupportFactory());
         }
 
         @Override
@@ -140,8 +138,7 @@ public class LauncherTest {
 
     private static final class DummyMagistoWithIOException extends Magisto {
         private DummyMagistoWithIOException() {
-            super(false, new DummyFileSystem(), new DummyActionFactory(), new DummyDocumentLoader(),
-                    new DummyDocumentConverterFactory());
+            super(false, new DummyFileSystem(), new DummyActionFactory(), new DummyDocumentSupportFactory());
         }
 
         @Override

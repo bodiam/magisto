@@ -43,6 +43,6 @@ class ConvertSourceAction extends AbstractAction {
 
     @Override
     public void perform(FileSystem fileSystem, Path sourceRoot, Path targetRoot) throws IOException {
-        documentConverter.convert(sourceRoot, targetRoot, getPath());
+        documentConverter.convert(getPath());
     }
 }

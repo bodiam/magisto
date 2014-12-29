@@ -20,28 +20,32 @@ import nl.ulso.magisto.document.Commit;
 import nl.ulso.magisto.document.History;
 import org.junit.Test;
 
-import java.util.List;
+import java.util.Date;
 
 import static nl.ulso.magisto.io.Paths.createPath;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
-public class DummyGitClientTest {
+public class GitClientStubTest {
 
     @Test
-    public void testCommitAvailable() throws Exception {
-        final History history = new DummyGitClient().getHistory(createPath("file"));
-        final Commit commit = history.getLastCommit();
-        assertNotNull(commit);
-        assertEquals("UNKNOWN", commit.getId());
+    public void testStubbedHistoryCommits() throws Exception {
+        final History history = new GitClientStub().getHistory(createPath("foo"));
+        assertNotNull(history.getCommits());
+        assertEquals(0, history.getCommits().size());
     }
 
     @Test
-    public void testChangelog() throws Exception {
-        final History history = new DummyGitClient().getHistory(createPath("file"));
-        final List<Commit> commits = history.getCommits();
-        assertNotNull(commits);
-        assertTrue(commits.isEmpty());
+    public void testStubbedLastCommit() throws Exception {
+        final History history = new GitClientStub().getHistory(createPath("foo"));
+        final Commit commit = history.getLastCommit();
+        assertNotNull(commit);
+        assertEquals("UNKNOWN", commit.getId());
+        assertEquals("UNKNOWN", commit.getShortId());
+        assertEquals("UNKNOWN", commit.getCommitter());
+        assertEquals("UNKNOWN", commit.getEmailAddress());
+        assertEquals("-", commit.getShortMessage());
+        assertEquals("-", commit.getFullMessage());
+        assertEquals(new Date(0), commit.getTimestamp());
     }
 }

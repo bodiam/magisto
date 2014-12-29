@@ -16,6 +16,7 @@
 
 package nl.ulso.magisto.git;
 
+import nl.ulso.magisto.document.History;
 import org.junit.Test;
 
 import static nl.ulso.magisto.io.Paths.createPath;

@@ -16,13 +16,18 @@
 
 package nl.ulso.magisto.git;
 
-import java.io.IOException;
-import java.util.List;
+import nl.ulso.magisto.document.DummyHistory;
+import nl.ulso.magisto.document.History;
 
-public interface History {
+import java.nio.file.Path;
 
-    public List<Commit> getCommits() throws IOException;
+/**
+ * Dummy implementation used then the source directory is not an actual Git repository.
+ */
+public class DummyGitClient implements GitClient {
 
-    public Commit getLastCommit() throws IOException;
-
+    @Override
+    public History getHistory(Path path) {
+        return new DummyHistory();
+    }
 }

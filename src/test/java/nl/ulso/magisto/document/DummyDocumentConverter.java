@@ -19,16 +19,22 @@ package nl.ulso.magisto.document;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import static nl.ulso.magisto.io.Paths.createPath;
+
 public class DummyDocumentConverter implements DocumentConverter {
 
+    private final Path sourceRoot;
+    private final Path targetRoot;
     private final boolean isCustomTemplateChanged;
     private String loggedConversions = "";
 
     public DummyDocumentConverter() {
-        this(false);
+        this(createPath("source"), createPath("target"), false);
     }
 
-    public DummyDocumentConverter(boolean isCustomTemplateChanged) {
+    public DummyDocumentConverter(Path sourceRoot, Path targetRoot, boolean isCustomTemplateChanged) {
+        this.sourceRoot = sourceRoot;
+        this.targetRoot = targetRoot;
         this.isCustomTemplateChanged = isCustomTemplateChanged;
     }
 
@@ -43,23 +49,17 @@ public class DummyDocumentConverter implements DocumentConverter {
     }
 
     @Override
-    public void convert(Path sourceRoot, Path targetRoot, Path path)
-            throws IOException {
+    public void convert(Path path) throws IOException {
         loggedConversions += String.format("%s:%s -> %s:%s", sourceRoot.getFileName(), path.getFileName(),
                 targetRoot.getFileName(), getConvertedFileName(path).getFileName());
     }
 
     @Override
-    public boolean isCustomTemplateChanged(Path sourceRoot, Path targetRoot)
-            throws IOException {
+    public boolean isCustomTemplateChanged() throws IOException {
         return isCustomTemplateChanged;
     }
 
     public String getLoggedConversions() {
         return loggedConversions;
-    }
-
-    public void clearRecordings() {
-        loggedConversions = "";
     }
 }
