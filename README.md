@@ -1,6 +1,6 @@
 # Magisto
 
-[![Build Status](https://travis-ci.org/voostindie/magisto.svg?branch=master)](https://travis-ci.org/voostindie/magisto)
+[![Build Status](https://travis-ci.org/voostindie/magisto.svg?branch=sitemap)](https://travis-ci.org/voostindie/magisto)
 
 ## Introduction
 
