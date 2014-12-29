@@ -20,8 +20,9 @@ import nl.ulso.magisto.action.Action;
 import nl.ulso.magisto.action.ActionCallback;
 import nl.ulso.magisto.action.ActionFactory;
 import nl.ulso.magisto.action.ActionSet;
-import nl.ulso.magisto.converter.FileConverter;
-import nl.ulso.magisto.converter.FileConverterFactory;
+import nl.ulso.magisto.document.DocumentConverter;
+import nl.ulso.magisto.document.DocumentConverterFactory;
+import nl.ulso.magisto.document.DocumentLoader;
 import nl.ulso.magisto.io.FileSystem;
 import nl.ulso.magisto.sitemap.Sitemap;
 
@@ -42,14 +43,16 @@ class Magisto {
     private final boolean forceCopy;
     private final FileSystem fileSystem;
     private final ActionFactory actionFactory;
-    private final FileConverterFactory fileConverterFactory;
+    private final DocumentLoader documentLoader;
+    private final DocumentConverterFactory documentConverterFactory;
 
     public Magisto(boolean forceOverwrite, FileSystem fileSystem, ActionFactory actionFactory,
-                   FileConverterFactory fileConverterFactory) {
+                   DocumentLoader documentLoader, DocumentConverterFactory documentConverterFactory) {
         this.forceCopy = forceOverwrite;
         this.fileSystem = fileSystem;
         this.actionFactory = actionFactory;
-        this.fileConverterFactory = fileConverterFactory;
+        this.documentLoader = documentLoader;
+        this.documentConverterFactory = documentConverterFactory;
     }
 
     /*
@@ -75,7 +78,7 @@ class Magisto {
             addSourceActions(actions, sourceRoot, targetRoot, forceCopy || currentSitemap.isEmpty());
             addStaticActions(actions, sourceRoot, targetRoot);
 
-            final Sitemap updatedSitemap = currentSitemap.apply(actions);
+            final Sitemap updatedSitemap = currentSitemap.apply(actions.computePageChanges(), documentLoader, sourceRoot);
 
             actions.performAll(fileSystem, sourceRoot, targetRoot, new ActionCallback() {
                 @Override
@@ -108,28 +111,28 @@ class Magisto {
     algorithm is simpler. It's a bit faster too.
      */
     private void addSourceActions(ActionSet actions, Path sourceRoot, Path targetRoot, boolean forceOverwrite) throws IOException {
-        final FileConverter fileConverter = fileConverterFactory.create(fileSystem, sourceRoot);
+        final DocumentConverter documentConverter = documentConverterFactory.create(fileSystem, documentLoader, sourceRoot);
         final boolean forceConvert = forceOverwrite
-                || fileConverter.isCustomTemplateChanged(fileSystem, sourceRoot, targetRoot);
+                || documentConverter.isCustomTemplateChanged(sourceRoot, targetRoot);
         final Iterator<Path> sources = fileSystem.findAllPaths(sourceRoot,
-                prioritizeOnExtension(fileConverter.getSourceExtensions())).iterator();
+                prioritizeOnExtension(documentLoader.getSupportedExtensions())).iterator();
         final Iterator<Path> targets = fileSystem.findAllPaths(targetRoot,
-                prioritizeOnExtension(fileConverter.getTargetExtension())).iterator();
+                prioritizeOnExtension(documentConverter.getTargetExtension())).iterator();
 
         Path source = nullableNext(sources);
         Path target = nullableNext(targets);
         while (source != null || target != null) {
-            final int comparison = compareNullablePaths(source, target, fileConverter);
+            final int comparison = compareNullablePaths(source, target, documentConverter);
 
             if (comparison == 0) { // Corresponding source and target
                 if (isSourceNewerThanTarget(sourceRoot.resolve(source), targetRoot.resolve(target))) {
-                    if (fileConverter.supports(source)) {
-                        actions.addConvertSourceAction(source, fileConverter);
+                    if (documentLoader.supports(source)) {
+                        actions.addConvertSourceAction(source, documentConverter);
                     } else {
                         actions.addCopySourceAction(source);
                     }
-                } else if (forceConvert && fileConverter.supports(source)) {
-                    actions.addConvertSourceAction(source, fileConverter);
+                } else if (forceConvert && documentLoader.supports(source)) {
+                    actions.addConvertSourceAction(source, documentConverter);
                 } else if (forceCopy) {
                     actions.addCopySourceAction(source);
                 } else {
@@ -139,8 +142,8 @@ class Magisto {
                 target = nullableNext(targets);
 
             } else if (comparison < 0) { // Source exists, no corresponding target
-                if (fileConverter.supports(source)) {
-                    actions.addConvertSourceAction(source, fileConverter);
+                if (documentLoader.supports(source)) {
+                    actions.addConvertSourceAction(source, documentConverter);
                 } else {
                     actions.addCopySourceAction(source);
                 }
@@ -174,15 +177,15 @@ class Magisto {
         return paths.hasNext() ? paths.next() : null;
     }
 
-    private int compareNullablePaths(Path source, Path target, FileConverter fileConverter) {
+    private int compareNullablePaths(Path source, Path target, DocumentConverter documentConverter) {
         if (source == null) {
             return 1;
         }
         if (target == null) {
             return -1;
         }
-        if (fileConverter.supports(source)) {
-            return fileConverter.getConvertedFileName(source).compareTo(target);
+        if (documentLoader.supports(source)) {
+            return documentConverter.getConvertedFileName(source).compareTo(target);
         }
         return source.compareTo(target);
     }

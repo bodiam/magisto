@@ -14,8 +14,9 @@
  * limitations under the License
  */
 
-package nl.ulso.magisto.converter.markdown;
+package nl.ulso.magisto.document.markdown;
 
+import nl.ulso.magisto.document.Document;
 import org.pegdown.Extensions;
 import org.pegdown.PegDownProcessor;
 import org.pegdown.ToHtmlSerializer;
@@ -24,7 +25,7 @@ import org.pegdown.ast.RootNode;
 /**
  * Represents a Markdown document.
  */
-public class MarkdownDocument {
+public class MarkdownDocument implements Document {
 
     private static final ThreadLocal<PegDownProcessor> PROCESSOR = new ThreadLocal<PegDownProcessor>() {
         @Override
@@ -34,13 +35,16 @@ public class MarkdownDocument {
     };
 
     private final RootNode rootNode;
+    private final String title;
 
     public MarkdownDocument(char[] markdownText) {
         rootNode = PROCESSOR.get().parseMarkdown(markdownText);
+        title = new TitleFinder().extractTitle(rootNode);
     }
 
-    public String extractTitle() {
-        return new TitleFinder().extractTitle(rootNode);
+    @Override
+    public String getTitle() {
+        return title;
     }
 
     public String toHtml() {

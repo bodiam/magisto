@@ -14,10 +14,11 @@
  * limitations under the License
  */
 
-package nl.ulso.magisto.converter.markdown;
+package nl.ulso.magisto.document.freemarker;
 
-import nl.ulso.magisto.converter.FileConverter;
-import nl.ulso.magisto.converter.FileConverterFactory;
+import nl.ulso.magisto.document.DocumentConverter;
+import nl.ulso.magisto.document.DocumentConverterFactory;
+import nl.ulso.magisto.document.DocumentLoader;
 import nl.ulso.magisto.git.GitClient;
 import nl.ulso.magisto.io.FileSystem;
 
@@ -25,17 +26,17 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 /**
- * Default implementation of the {@link nl.ulso.magisto.converter.FileConverterFactory}.
+ * Default implementation of the {@link nl.ulso.magisto.document.DocumentConverterFactory}.
  */
-public class MarkdownToHtmlFileConverterFactory implements FileConverterFactory {
+public class FreeMarkerDocumentConverterFactory implements DocumentConverterFactory {
     private final GitClient gitClient;
 
-    public MarkdownToHtmlFileConverterFactory(GitClient gitClient) {
+    public FreeMarkerDocumentConverterFactory(GitClient gitClient) {
         this.gitClient = gitClient;
     }
 
     @Override
-    public FileConverter create(FileSystem fileSystem, Path sourceRoot) throws IOException {
-        return new MarkdownToHtmlFileConverter(fileSystem, sourceRoot, gitClient);
+    public DocumentConverter create(FileSystem fileSystem, DocumentLoader documentLoader, Path sourceRoot) throws IOException {
+        return new FreeMarkerDocumentConverter(fileSystem, documentLoader, sourceRoot, gitClient);
     }
 }

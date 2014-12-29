@@ -14,13 +14,14 @@
  * limitations under the License
  */
 
-package nl.ulso.magisto.converter.markdown;
+package nl.ulso.magisto.document.markdown;
 
 import org.parboiled.common.StringUtils;
 import org.pegdown.LinkRenderer;
 import org.pegdown.ast.ExpLinkNode;
 import org.pegdown.ast.RefLinkNode;
 
+import static nl.ulso.magisto.document.markdown.MarkdownDocumentLoader.MARKDOWN_EXTENSIONS;
 import static org.pegdown.FastEncoder.encode;
 
 /**
@@ -30,13 +31,28 @@ class MarkdownLinkRenderer extends LinkRenderer {
 
     @Override
     public Rendering render(ExpLinkNode node, String text) {
-        Rendering rendering = new Rendering(MarkdownLinkResolver.resolveLink(node.url), text);
+        Rendering rendering = new Rendering(resolveLink(node.url), text);
         return StringUtils.isEmpty(node.title) ? rendering : rendering.withAttribute("title", encode(node.title));
     }
 
     @Override
     public Rendering render(RefLinkNode node, String url, String title, String text) {
-        Rendering rendering = new Rendering(MarkdownLinkResolver.resolveLink(url), text);
+        Rendering rendering = new Rendering(resolveLink(url), text);
         return StringUtils.isEmpty(title) ? rendering : rendering.withAttribute("title", encode(title));
+    }
+
+    /*
+     * TODO: Improve this code. It supports only Markdown links without anchors, and it assumes Markdown becomes HMTL.
+     */
+    String resolveLink(String originalLink) {
+        if (originalLink.contains("://")) {
+            return originalLink;
+        }
+        for (String extension : MARKDOWN_EXTENSIONS) {
+            if (originalLink.toLowerCase().endsWith(extension)) {
+                return originalLink.substring(0, originalLink.length() - extension.length()) + "html";
+            }
+        }
+        return originalLink;
     }
 }

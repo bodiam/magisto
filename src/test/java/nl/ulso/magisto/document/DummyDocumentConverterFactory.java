@@ -14,17 +14,22 @@
  * limitations under the License
  */
 
-package nl.ulso.magisto.converter;
+package nl.ulso.magisto.document;
 
 import nl.ulso.magisto.io.FileSystem;
 
-import java.io.IOException;
 import java.nio.file.Path;
 
-/**
- * Factory for converters.
- */
-public interface FileConverterFactory {
+public class DummyDocumentConverterFactory implements DocumentConverterFactory {
 
-    FileConverter create(FileSystem fileSystem, Path sourceRoot) throws IOException;
+    private boolean isCustomTemplateChanged = false;
+
+    @Override
+    public DocumentConverter create(FileSystem fileSystem, DocumentLoader documentLoader, Path sourceRoot) {
+        return new DummyDocumentConverter(isCustomTemplateChanged);
+    }
+
+    public void setCustomTemplateChanged() {
+        isCustomTemplateChanged = true;
+    }
 }

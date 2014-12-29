@@ -16,7 +16,7 @@
 
 package nl.ulso.magisto.action;
 
-import nl.ulso.magisto.converter.DummyFileConverter;
+import nl.ulso.magisto.document.DummyDocumentConverter;
 import nl.ulso.magisto.io.DummyFileSystem;
 import nl.ulso.magisto.io.DummyPathEntry;
 import org.junit.Before;
@@ -30,7 +30,7 @@ import static org.junit.Assert.assertEquals;
 
 public class ConvertSourceActionTest {
 
-    private final DummyFileConverter fileConverter = new DummyFileConverter();
+    private final DummyDocumentConverter fileConverter = new DummyDocumentConverter();
 
     @Before
     public void setUp() throws Exception {

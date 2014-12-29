@@ -17,13 +17,18 @@
 package nl.ulso.magisto.sitemap;
 
 import nl.ulso.magisto.io.DummyFileSystem;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 public class SitemapTest {
 
@@ -40,7 +45,12 @@ public class SitemapTest {
         final Sitemap sitemap = new Sitemap(pages);
         DummyFileSystem fileSystem = new DummyFileSystem();
         sitemap.save(fileSystem, fileSystem.prepareTargetDirectory(""));
-        assertEquals(SITEMAP_JSON, fileSystem.getTextFileFromBufferedWriter(".magisto-sitemap"));
+        final String text = fileSystem.getTextFileFromBufferedWriter(".magisto-sitemap");
+        final JSONObject object = (JSONObject) new JSONParser().parse(text);
+        final Long version = (Long) object.get("version");
+        assertThat(version, is(1l));
+        final JSONArray array = (JSONArray) object.get("pages");
+        assertThat(array.size(), is(2));
     }
 
     @Test

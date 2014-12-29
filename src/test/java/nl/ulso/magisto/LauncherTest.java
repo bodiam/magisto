@@ -17,7 +17,8 @@
 package nl.ulso.magisto;
 
 import nl.ulso.magisto.action.DummyActionFactory;
-import nl.ulso.magisto.converter.DummyFileConverterFactory;
+import nl.ulso.magisto.document.DummyDocumentConverterFactory;
+import nl.ulso.magisto.document.DummyDocumentLoader;
 import nl.ulso.magisto.io.DummyFileSystem;
 import org.junit.After;
 import org.junit.Before;
@@ -127,7 +128,8 @@ public class LauncherTest {
 
     private static final class DummyMagisto extends Magisto {
         private DummyMagisto() {
-            super(false, new DummyFileSystem(), new DummyActionFactory(), new DummyFileConverterFactory());
+            super(false, new DummyFileSystem(), new DummyActionFactory(), new DummyDocumentLoader(),
+                    new DummyDocumentConverterFactory());
         }
 
         @Override
@@ -138,7 +140,8 @@ public class LauncherTest {
 
     private static final class DummyMagistoWithIOException extends Magisto {
         private DummyMagistoWithIOException() {
-            super(false, new DummyFileSystem(), new DummyActionFactory(), new DummyFileConverterFactory());
+            super(false, new DummyFileSystem(), new DummyActionFactory(), new DummyDocumentLoader(),
+                    new DummyDocumentConverterFactory());
         }
 
         @Override

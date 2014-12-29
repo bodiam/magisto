@@ -18,6 +18,7 @@ package nl.ulso.magisto.sitemap;
 
 import org.json.simple.JSONObject;
 
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,6 +34,15 @@ public class Page implements Comparable<Page> {
     private final String directory;
     private final String file;
     private final String title;
+
+    Page(Path path) {
+        this(path, "");
+
+    }
+
+    Page(Path path, String title) {
+        this(path.getParent() != null ? path.getParent().toString() : "", path.getFileName().toString(), title);
+    }
 
     Page(String directory, String file, String title) {
         this.directory = directory;

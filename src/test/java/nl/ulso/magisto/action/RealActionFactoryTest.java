@@ -16,7 +16,7 @@
 
 package nl.ulso.magisto.action;
 
-import nl.ulso.magisto.converter.DummyFileConverter;
+import nl.ulso.magisto.document.DummyDocumentConverter;
 import org.junit.Test;
 
 import static nl.ulso.magisto.io.Paths.createPath;
@@ -48,7 +48,7 @@ public class RealActionFactoryTest {
 
     @Test
     public void testConvertAction() throws Exception {
-        assertNotNull(factory.convertSource(createPath("convert"), new DummyFileConverter()));
+        assertNotNull(factory.convertSource(createPath("convert"), new DummyDocumentConverter()));
     }
 
     @Test

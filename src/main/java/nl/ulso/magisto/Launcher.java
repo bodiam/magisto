@@ -20,7 +20,8 @@ import com.lexicalscope.jewel.cli.ArgumentValidationException;
 import com.lexicalscope.jewel.cli.CliFactory;
 import com.lexicalscope.jewel.cli.ValidationFailure;
 import nl.ulso.magisto.action.RealActionFactory;
-import nl.ulso.magisto.converter.markdown.MarkdownToHtmlFileConverterFactory;
+import nl.ulso.magisto.document.freemarker.FreeMarkerDocumentConverterFactory;
+import nl.ulso.magisto.document.markdown.MarkdownDocumentLoader;
 import nl.ulso.magisto.git.DummyGitClient;
 import nl.ulso.magisto.git.GitClient;
 import nl.ulso.magisto.git.JGitClient;
@@ -99,8 +100,10 @@ public class Launcher {
         if (DUMMY_MAGISTO != null) {
             return DUMMY_MAGISTO;
         }
-        return new Magisto(forceOverwrite, new RealFileSystem(), new RealActionFactory(),
-                new MarkdownToHtmlFileConverterFactory(gitClient));
+        final RealFileSystem fileSystem = new RealFileSystem();
+        return new Magisto(forceOverwrite, fileSystem, new RealActionFactory(),
+                new MarkdownDocumentLoader(fileSystem),
+                new FreeMarkerDocumentConverterFactory(gitClient));
     }
 
     private static void run(Magisto magisto, String sourceDirectory, String targetDirectory) {

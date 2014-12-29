@@ -16,7 +16,7 @@
 
 package nl.ulso.magisto.action;
 
-import nl.ulso.magisto.converter.FileConverter;
+import nl.ulso.magisto.document.DocumentConverter;
 import nl.ulso.magisto.io.FileSystem;
 
 import java.io.IOException;
@@ -29,11 +29,11 @@ import static nl.ulso.magisto.action.ActionCategory.SOURCE;
  */
 class ConvertSourceAction extends AbstractAction {
 
-    private final FileConverter fileConverter;
+    private final DocumentConverter documentConverter;
 
-    ConvertSourceAction(Path path, FileConverter fileConverter) {
+    ConvertSourceAction(Path path, DocumentConverter documentConverter) {
         super(path, SOURCE);
-        this.fileConverter = fileConverter;
+        this.documentConverter = documentConverter;
     }
 
     @Override
@@ -43,6 +43,6 @@ class ConvertSourceAction extends AbstractAction {
 
     @Override
     public void perform(FileSystem fileSystem, Path sourceRoot, Path targetRoot) throws IOException {
-        fileConverter.convert(fileSystem, sourceRoot, targetRoot, getPath());
+        documentConverter.convert(sourceRoot, targetRoot, getPath());
     }
 }

@@ -14,26 +14,17 @@
  * limitations under the License
  */
 
-package nl.ulso.magisto.action;
+package nl.ulso.magisto.document;
 
-import nl.ulso.magisto.document.DocumentConverter;
+import nl.ulso.magisto.io.FileSystem;
 
+import java.io.IOException;
 import java.nio.file.Path;
 
 /**
- * Factory for all the various types of actions.
+ * Factory for converters.
  */
-public interface ActionFactory {
+public interface DocumentConverterFactory {
 
-    Action skipSource(Path path);
-
-    Action skipStatic(Path path);
-
-    Action copySource(Path path);
-
-    Action copyStatic(Path path, String staticContentDirectory);
-
-    Action convertSource(Path path, DocumentConverter documentConverter);
-
-    Action deleteTarget(Path path);
+    DocumentConverter create(FileSystem fileSystem, DocumentLoader documentLoader, Path sourceRoot) throws IOException;
 }

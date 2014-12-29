@@ -14,45 +14,51 @@
  * limitations under the License
  */
 
-package nl.ulso.magisto.converter.markdown;
+package nl.ulso.magisto.document.freemarker;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
-import nl.ulso.magisto.converter.FileConverter;
+import nl.ulso.magisto.document.DocumentConverter;
+import nl.ulso.magisto.document.Document;
+import nl.ulso.magisto.document.DocumentLoader;
 import nl.ulso.magisto.git.GitClient;
 import nl.ulso.magisto.io.FileSystem;
-import nl.ulso.magisto.io.Paths;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Path;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static nl.ulso.magisto.io.Paths.splitOnExtension;
 
 /**
  * Converts Markdown files to HTML using a FreeMarker template.
  */
-class MarkdownToHtmlFileConverter implements FileConverter {
+class FreeMarkerDocumentConverter implements DocumentConverter {
 
     private static final String TEMPLATE_PATH = "/nl/ulso/magisto";
     private static final String DEFAULT_PAGE_TEMPLATE = "page_template.ftl";
     private static final String CUSTOM_PAGE_TEMPLATE = ".page.ftl";
+    private static final String TARGET_EXTENSION = "html";
 
+    private final FileSystem fileSystem;
+    private final DocumentLoader documentLoader;
     private final GitClient gitClient;
     private final Template template;
 
-    MarkdownToHtmlFileConverter(FileSystem fileSystem, Path sourceRoot, GitClient gitClient)
-            throws IOException {
+    FreeMarkerDocumentConverter(FileSystem fileSystem, DocumentLoader documentLoader, Path sourceRoot,
+                                GitClient gitClient) throws IOException {
+        this.fileSystem = fileSystem;
+        this.documentLoader = documentLoader;
         this.gitClient = gitClient;
         try {
-            if (isCustomTemplateAvailable(fileSystem, sourceRoot)) {
-                template = loadCustomTemplate(fileSystem, sourceRoot);
+            if (isCustomTemplateAvailable(sourceRoot)) {
+                template = loadCustomTemplate(sourceRoot);
             } else {
                 template = loadDefaultTemplate();
             }
@@ -61,18 +67,18 @@ class MarkdownToHtmlFileConverter implements FileConverter {
         }
     }
 
-    boolean isCustomTemplateAvailable(FileSystem fileSystem, Path sourceRoot) {
+    boolean isCustomTemplateAvailable(Path sourceRoot) {
         return fileSystem.exists(sourceRoot.resolve(CUSTOM_PAGE_TEMPLATE));
     }
 
     Template loadDefaultTemplate() throws IOException {
         Configuration configuration = createTemplateConfiguration();
-        configuration.setClassForTemplateLoading(MarkdownToHtmlFileConverter.class, TEMPLATE_PATH);
+        configuration.setClassForTemplateLoading(FreeMarkerDocumentConverter.class, TEMPLATE_PATH);
         return configuration.getTemplate(DEFAULT_PAGE_TEMPLATE);
 
     }
 
-    Template loadCustomTemplate(FileSystem fileSystem, Path sourceRoot) throws IOException {
+    Template loadCustomTemplate(Path sourceRoot) throws IOException {
         Configuration configuration = createTemplateConfiguration();
         configuration.setTemplateLoader(new CustomTemplateLoader(fileSystem, sourceRoot));
         return configuration.getTemplate(CUSTOM_PAGE_TEMPLATE);
@@ -87,9 +93,8 @@ class MarkdownToHtmlFileConverter implements FileConverter {
     }
 
     @Override
-    public boolean isCustomTemplateChanged(FileSystem fileSystem, Path sourceRoot, Path targetRoot)
-            throws IOException {
-        if (isCustomTemplateAvailable(fileSystem, sourceRoot)) {
+    public boolean isCustomTemplateChanged(Path sourceRoot, Path targetRoot) throws IOException {
+        if (isCustomTemplateAvailable(sourceRoot)) {
             final long touchFileTimestamp = fileSystem.getTouchFileLastModifiedInMillis(targetRoot);
             final long customTemplateTimestamp = fileSystem.getLastModifiedInMillis(
                     sourceRoot.resolve(CUSTOM_PAGE_TEMPLATE));
@@ -99,33 +104,23 @@ class MarkdownToHtmlFileConverter implements FileConverter {
     }
 
     @Override
-    public Set<String> getSourceExtensions() {
-        return MarkdownLinkResolver.SOURCE_EXTENSIONS;
-    }
-
-    @Override
     public String getTargetExtension() {
-        return MarkdownLinkResolver.TARGET_EXTENSION;
-    }
-
-    @Override
-    public boolean supports(Path path) {
-        return MarkdownLinkResolver.SOURCE_EXTENSIONS.contains(
-                Paths.splitOnExtension(path).getOriginalExtension().toLowerCase());
+        return TARGET_EXTENSION;
     }
 
     @Override
     public Path getConvertedFileName(Path path) {
-        return path.resolveSibling(MarkdownLinkResolver.resolveLink(path.getFileName().toString()));
+        final Path pathWithoutExtension = splitOnExtension(path).getPathWithoutExtension();
+        final String convertedFileName = pathWithoutExtension.getFileName().toString() + "." + TARGET_EXTENSION;
+        return path.resolveSibling(convertedFileName);
     }
 
     @Override
-    public void convert(FileSystem fileSystem, Path sourceRoot, Path targetRoot, Path path)
-            throws IOException {
+    public void convert(Path sourceRoot, Path targetRoot, Path path) throws IOException {
         Logger.getGlobal().log(Level.FINE, String.format("Converting '%s' from Markdown to HTML.", path));
         final Path targetFile = targetRoot.resolve(getConvertedFileName(path));
         try (final Writer writer = fileSystem.newBufferedWriterForTextFile(targetFile)) {
-            final MarkdownDocument document = readMarkdownDocument(fileSystem, sourceRoot.resolve(path));
+            final Document document = documentLoader.loadDocument(sourceRoot.resolve(path));
             final Map<String, Object> model = createPageModel(path, document);
             template.process(model, writer);
         } catch (TemplateException e) {
@@ -134,28 +129,13 @@ class MarkdownToHtmlFileConverter implements FileConverter {
         }
     }
 
-    Map<String, Object> createPageModel(Path path, MarkdownDocument document) throws IOException {
+    Map<String, Object> createPageModel(Path path, Document document) {
         final Map<String, Object> model = new HashMap<>();
         model.put("timestamp", new Date());
         model.put("path", path);
-        model.put("title", document.extractTitle());
+        model.put("title", document.getTitle());
         model.put("content", document.toHtml());
         model.put("history", gitClient.getHistory(path));
         return model;
-    }
-
-    MarkdownDocument readMarkdownDocument(FileSystem fileSystem, Path path) throws IOException {
-        try (final BufferedReader reader = fileSystem.newBufferedReaderForTextFile(path)) {
-            final StringBuilder builder = new StringBuilder();
-            while (reader.ready()) {
-                final String line = reader.readLine();
-                if (line == null) {
-                    break;
-                }
-                builder.append(line);
-                builder.append(System.lineSeparator());
-            }
-            return new MarkdownDocument(builder.toString().toCharArray());
-        }
     }
 }

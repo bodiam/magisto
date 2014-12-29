@@ -14,9 +14,11 @@
  * limitations under the License
  */
 
-package nl.ulso.magisto.converter.markdown;
+package nl.ulso.magisto.document.freemarker;
 
 import freemarker.template.Template;
+import nl.ulso.magisto.document.DummyDocumentLoader;
+import nl.ulso.magisto.document.markdown.MarkdownDocument;
 import nl.ulso.magisto.git.DummyGitClient;
 import nl.ulso.magisto.io.DummyFileSystem;
 import org.junit.Before;
@@ -31,9 +33,9 @@ import static nl.ulso.magisto.io.DummyPathEntry.createPathEntry;
 import static nl.ulso.magisto.io.Paths.createPath;
 import static org.junit.Assert.*;
 
-public class MarkdownToHtmlFileConverterTest {
+public class FreeMarkerDocumentConverterFactoryTest {
 
-    private MarkdownToHtmlFileConverter fileConverter;
+    private FreeMarkerDocumentConverter fileConverter;
     private DummyFileSystem fileSystemAccessor;
     private DummyGitClient gitClient;
     private Path sourcePath;
@@ -44,32 +46,8 @@ public class MarkdownToHtmlFileConverterTest {
         this.sourcePath = fileSystemAccessor.resolveSourceDirectory("source");
         fileSystemAccessor.prepareTargetDirectory("target");
         this.gitClient = new DummyGitClient();
-        this.fileConverter = new MarkdownToHtmlFileConverter(fileSystemAccessor, createPath("."), gitClient);
-    }
-
-    @Test
-    public void testMarkdownExtensionMd() throws Exception {
-        assertTrue(fileConverter.supports(createPath("foo.md")));
-    }
-
-    @Test
-    public void testMarkdownExtensionMdown() throws Exception {
-        assertTrue(fileConverter.supports(createPath("foo.mdown")));
-    }
-
-    @Test
-    public void testMarkdownExtensionMarkdown() throws Exception {
-        assertTrue(fileConverter.supports(createPath("foo.markdown")));
-    }
-
-    @Test
-    public void testMarkdownExtensionMarkdownWeirdCasing() throws Exception {
-        assertTrue(fileConverter.supports(createPath("foo.MarkDown")));
-    }
-
-    @Test
-    public void testNormalFile() throws Exception {
-        assertFalse(fileConverter.supports(createPath("foo.jpg")));
+        this.fileConverter = new FreeMarkerDocumentConverter(fileSystemAccessor, new DummyDocumentLoader(),
+                createPath("."), gitClient);
     }
 
     @Test
@@ -97,7 +75,7 @@ public class MarkdownToHtmlFileConverterTest {
     @Test
     public void testConvertMarkdownFile() throws Exception {
         fileSystemAccessor.registerTextFileForBufferedReader("test.md", String.format("# Title%n%nParagraph"));
-        fileConverter.convert(fileSystemAccessor, createPath("."), createPath("."), createPath("test.md"));
+        fileConverter.convert(createPath("."), createPath("."), createPath("test.md"));
         final String output = fileSystemAccessor.getTextFileFromBufferedWriter("test.html");
         assertNotNull(output);
         System.out.println("output = " + output);
@@ -114,7 +92,7 @@ public class MarkdownToHtmlFileConverterTest {
     public void testLoadCustomTemplate() throws Exception {
         fileSystemAccessor.addSourcePaths(createPathEntry(".page.ftl"));
         fileSystemAccessor.registerTextFileForBufferedReader(".page.ftl", "CUSTOM TEMPLATE");
-        final Template template = fileConverter.loadCustomTemplate(fileSystemAccessor, sourcePath);
+        final Template template = fileConverter.loadCustomTemplate(sourcePath);
         assertNotNull(template);
         assertEquals(".page.ftl", template.getName());
     }
@@ -124,8 +102,9 @@ public class MarkdownToHtmlFileConverterTest {
         fileSystemAccessor.addSourcePaths(createPathEntry(".page.ftl"));
         fileSystemAccessor.registerTextFileForBufferedReader(".page.ftl", "<@link path=\"/static/favicon.ico\"/>");
         fileSystemAccessor.registerTextFileForBufferedReader("test.md", String.format("# Title%n%nParagraph"));
-        this.fileConverter = new MarkdownToHtmlFileConverter(fileSystemAccessor, createPath("."), gitClient);
-        fileConverter.convert(fileSystemAccessor, createPath("."), createPath("."), createPath("dir", "test.md"));
+        this.fileConverter = new FreeMarkerDocumentConverter(fileSystemAccessor, new DummyDocumentLoader(),
+                createPath("."), gitClient);
+        fileConverter.convert(createPath("."), createPath("."), createPath("dir", "test.md"));
         final String output = fileSystemAccessor.getTextFileFromBufferedWriter("test.html");
         assertEquals("../static/favicon.ico", output);
     }
@@ -133,7 +112,7 @@ public class MarkdownToHtmlFileConverterTest {
     @Test
     public void testCustomTemplateHasNotChanged() throws Exception {
         fileSystemAccessor.addSourcePaths(createPathEntry(".page.ftl"));
-        assertFalse(fileConverter.isCustomTemplateChanged(fileSystemAccessor, createPath("."), createPath(".")));
+        assertFalse(fileConverter.isCustomTemplateChanged(createPath("."), createPath(".")));
     }
 
     @Test
@@ -142,6 +121,6 @@ public class MarkdownToHtmlFileConverterTest {
         final Path sourceRoot = fileSystemAccessor.resolveSourceDirectory(".");
         fileSystemAccessor.addSourcePaths(createPathEntry(sourceRoot.resolve(".page.ftl")));
         fileSystemAccessor.registerTextFileForBufferedReader(".page.ftl", "CUSTOM TEMPLATE");
-        assertTrue(fileConverter.isCustomTemplateChanged(fileSystemAccessor, sourceRoot, createPath(".")));
+        assertTrue(fileConverter.isCustomTemplateChanged(sourceRoot, createPath(".")));
     }
 }

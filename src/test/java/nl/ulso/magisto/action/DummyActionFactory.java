@@ -16,7 +16,7 @@
 
 package nl.ulso.magisto.action;
 
-import nl.ulso.magisto.converter.FileConverter;
+import nl.ulso.magisto.document.DocumentConverter;
 
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -50,17 +50,13 @@ public class DummyActionFactory implements ActionFactory {
     }
 
     @Override
-    public Action convertSource(Path path, FileConverter fileConverter) {
+    public Action convertSource(Path path, DocumentConverter documentConverter) {
         return new DummyAction(this, path, SOURCE, CONVERT_SOURCE);
     }
 
     @Override
     public Action deleteTarget(Path path) {
         return new DummyAction(this, path, SOURCE, DELETE_TARGET);
-    }
-
-    public void clearRecordings() {
-        counts.clear();
     }
 
     public void registerActionPerformed(DummyAction action) {

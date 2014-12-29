@@ -14,26 +14,14 @@
  * limitations under the License
  */
 
-package nl.ulso.magisto.action;
-
-import nl.ulso.magisto.document.DocumentConverter;
-
-import java.nio.file.Path;
+package nl.ulso.magisto.document;
 
 /**
- * Factory for all the various types of actions.
+ * Represents a file that can be converted to HTML, like an article or a blog post.
  */
-public interface ActionFactory {
+public interface Document {
 
-    Action skipSource(Path path);
+    String getTitle();
 
-    Action skipStatic(Path path);
-
-    Action copySource(Path path);
-
-    Action copyStatic(Path path, String staticContentDirectory);
-
-    Action convertSource(Path path, DocumentConverter documentConverter);
-
-    Action deleteTarget(Path path);
+    String toHtml();
 }

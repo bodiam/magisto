@@ -14,13 +14,10 @@
  * limitations under the License
  */
 
-package nl.ulso.magisto.converter;
-
-import nl.ulso.magisto.io.FileSystem;
+package nl.ulso.magisto.document;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Set;
 
 /**
  * Converts files from one format to another.
@@ -30,17 +27,13 @@ import java.util.Set;
  * comparison algorithm in the Magisto class will go out of whack!
  * </p>
  */
-public interface FileConverter {
-
-    Set<String> getSourceExtensions();
+public interface DocumentConverter {
 
     String getTargetExtension();
 
-    boolean supports(Path path);
-
     Path getConvertedFileName(Path path);
 
-    void convert(FileSystem fileSystem, Path sourceRoot, Path targetRoot, Path path) throws IOException;
+    void convert(Path sourceRoot, Path targetRoot, Path path) throws IOException;
 
-    boolean isCustomTemplateChanged(FileSystem fileSystem, Path sourceRoot, Path targetRoot) throws IOException;
+    boolean isCustomTemplateChanged(Path sourceRoot, Path targetRoot) throws IOException;
 }

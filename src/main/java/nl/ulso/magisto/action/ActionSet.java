@@ -16,26 +16,26 @@
 
 package nl.ulso.magisto.action;
 
-import nl.ulso.magisto.converter.FileConverter;
+import nl.ulso.magisto.document.DocumentConverter;
 import nl.ulso.magisto.io.FileSystem;
+import nl.ulso.magisto.sitemap.PageChange;
+import nl.ulso.magisto.sitemap.ChangeType;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Maintains a set of actions to be performed. On each path at most one action can be performed. Additionally the
  * actions are ordered in a specific order with the {@link ActionComparator}.
  * <p>
- * Two things can be done with an {@code ActionSet}:
+ * Three things can be done with an {@code ActionSet}:
  * </p>
  * <ol>
  * <li>Add actions to it, by calling the various {@code add...} methods.</li>
- * <li>Performing all actions in the set, by calling the {@link #performAll(nl.ulso.magisto.io.FileSystem, Path, Path,
+ * <li>Perform all actions in the set, by calling the {@link #performAll(nl.ulso.magisto.io.FileSystem, Path, Path,
  * ActionCallback)} method.</li>
+ * <li>Compute list of {@link PageChange}s from it, to update the sitemap from.</li>
  * </ol>
  * <p>
  * Once all actions are performed, the internal set of actions is depleted.
@@ -69,8 +69,8 @@ public class ActionSet {
         add(actionFactory.copyStatic(path, staticContentDirectory));
     }
 
-    public void addConvertSourceAction(Path path, FileConverter fileConverter) {
-        add(actionFactory.convertSource(path, fileConverter));
+    public void addConvertSourceAction(Path path, DocumentConverter documentConverter) {
+        add(actionFactory.convertSource(path, documentConverter));
     }
 
     public void addDeleteTargetAction(Path path) {
@@ -129,6 +129,20 @@ public class ActionSet {
             return staticAction;
         }
         return sourceAction;
+    }
+
+    public List<PageChange> computePageChanges() {
+        final List<PageChange> changes = new ArrayList<>();
+        for (Action action : actionMap.values()) {
+            final ActionType type = action.getActionType();
+            if (type == ActionType.CONVERT_SOURCE) {
+                changes.add(new PageChange(ChangeType.INSERT_OR_UPDATE, action.getPath()));
+            }
+            if (type == ActionType.DELETE_TARGET) {
+                changes.add(new PageChange(ChangeType.DELETE, action.getPath()));
+            }
+        }
+        return Collections.unmodifiableList(changes);
     }
 
     private class BlockedActionWrapper implements Action {

@@ -14,7 +14,7 @@
  * limitations under the License
  */
 
-package nl.ulso.magisto.converter.markdown;
+package nl.ulso.magisto.document.markdown;
 
 import org.junit.Test;
 
@@ -29,18 +29,18 @@ public class MarkdownDocumentTest {
     @Test
     public void testTitleExtractionAtxHeader() throws Exception {
         assertEquals("title", createMarkdownDocument(
-                "abstract\n\n# title\n\n## subtitle\n\nsome text").extractTitle());
+                "abstract\n\n# title\n\n## subtitle\n\nsome text").getTitle());
     }
 
     @Test
     public void testTitleExtractionSetextHeader() throws Exception {
         assertEquals("title", createMarkdownDocument(
-                "abstract\n\ntitle\n=====\n\nsubtitle\n--------\n\nsome text").extractTitle());
+                "abstract\n\ntitle\n=====\n\nsubtitle\n--------\n\nsome text").getTitle());
     }
 
     @Test
     public void testTitleExtractionNoTitlePresent() throws Exception {
-        assertEquals("", createMarkdownDocument("some text").extractTitle());
+        assertEquals("", createMarkdownDocument("some text").getTitle());
     }
 
     @Test

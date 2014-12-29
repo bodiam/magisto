@@ -14,26 +14,31 @@
  * limitations under the License
  */
 
-package nl.ulso.magisto.action;
-
-import nl.ulso.magisto.document.DocumentConverter;
+package nl.ulso.magisto.sitemap;
 
 import java.nio.file.Path;
 
+import static nl.ulso.magisto.io.Paths.requireRelativePath;
+
 /**
- * Factory for all the various types of actions.
+ * Represents a change to a single page
  */
-public interface ActionFactory {
+public class PageChange {
 
-    Action skipSource(Path path);
+    private final ChangeType type;
+    private final Path path;
 
-    Action skipStatic(Path path);
+    public PageChange(ChangeType type, Path path) {
+        requireRelativePath(path);
+        this.type = type;
+        this.path = path;
+    }
 
-    Action copySource(Path path);
+    public ChangeType getChangeType() {
+        return type;
+    }
 
-    Action copyStatic(Path path, String staticContentDirectory);
-
-    Action convertSource(Path path, DocumentConverter documentConverter);
-
-    Action deleteTarget(Path path);
+    public Path getPath() {
+        return path;
+    }
 }

@@ -14,7 +14,7 @@
  * limitations under the License
  */
 
-package nl.ulso.magisto.converter.markdown;
+package nl.ulso.magisto.document.freemarker;
 
 import freemarker.core.Environment;
 import freemarker.ext.beans.StringModel;

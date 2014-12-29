@@ -16,7 +16,7 @@
 
 package nl.ulso.magisto.sitemap;
 
-import nl.ulso.magisto.action.ActionSet;
+import nl.ulso.magisto.document.DocumentLoader;
 import nl.ulso.magisto.io.FileSystem;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -54,7 +54,7 @@ public class Sitemap {
         this.pages = unmodifiableSortedSet(new TreeSet<>(pages));
     }
 
-    Sitemap() {
+    private Sitemap() {
         this(Collections.<Page>emptySet());
     }
 
@@ -104,14 +104,26 @@ public class Sitemap {
     }
 
     /**
-     * Applies all applicable actions in the ActionSet to this sitemap and returns a new, updated sitemap.
+     * Applies all changes in the list to this sitemap and returns a new, updated sitemap.
      *
-     * @param actions The set of actions to apply.
-     * @return A new sitemap, based on the current one, with all applicable actions applied.
+     * @param changes The list of changes to apply.
+     * @return A new sitemap, based on the current one, with all changes applied.
      */
-    public Sitemap apply(ActionSet actions) {
-        // TODO: implement this method
-        return this;
+    public Sitemap apply(List<PageChange> changes, DocumentLoader documentLoader, Path sourceRoot) throws IOException {
+        final Set<Page> pages = new HashSet<>(this.pages);
+        for (PageChange change : changes) {
+            final Path path = change.getPath();
+            switch (change.getChangeType()) {
+                case DELETE:
+                    pages.remove(new Page(path));
+                case INSERT_OR_UPDATE:
+                    final Page page = new Page(path, documentLoader.loadDocument(sourceRoot.resolve(path)).getTitle());
+                    pages.remove(page);
+                    pages.add(page);
+                    break;
+            }
+        }
+        return new Sitemap(pages);
     }
 
     public boolean isEmpty() {
