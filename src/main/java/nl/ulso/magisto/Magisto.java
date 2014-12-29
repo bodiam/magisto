@@ -23,6 +23,7 @@ import nl.ulso.magisto.action.ActionSet;
 import nl.ulso.magisto.converter.FileConverter;
 import nl.ulso.magisto.converter.FileConverterFactory;
 import nl.ulso.magisto.io.FileSystem;
+import nl.ulso.magisto.sitemap.Sitemap;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -30,6 +31,7 @@ import java.util.Iterator;
 import java.util.SortedSet;
 
 import static nl.ulso.magisto.io.Paths.prioritizeOnExtension;
+import static nl.ulso.magisto.sitemap.Sitemap.emptySitemap;
 
 /**
  * Knits all the components in the Magisto system together (like a module) and runs it.
@@ -37,7 +39,6 @@ import static nl.ulso.magisto.io.Paths.prioritizeOnExtension;
 class Magisto {
     private static final String STATIC_CONTENT_DIRECTORY = ".static";
 
-    private final boolean forceOverwrite;
     private final boolean forceCopy;
     private final FileSystem fileSystem;
     private final ActionFactory actionFactory;
@@ -45,7 +46,6 @@ class Magisto {
 
     public Magisto(boolean forceOverwrite, FileSystem fileSystem, ActionFactory actionFactory,
                    FileConverterFactory fileConverterFactory) {
-        this.forceOverwrite = forceOverwrite;
         this.forceCopy = forceOverwrite;
         this.fileSystem = fileSystem;
         this.actionFactory = actionFactory;
@@ -69,9 +69,13 @@ class Magisto {
             final Path targetRoot = fileSystem.prepareTargetDirectory(targetDirectory);
             fileSystem.requireDistinct(sourceRoot, targetRoot);
 
+            final Sitemap currentSitemap = loadCurrentSitemap(targetRoot);
+
             final ActionSet actions = new ActionSet(actionFactory);
-            addSourceActions(actions, sourceRoot, targetRoot);
+            addSourceActions(actions, sourceRoot, targetRoot, forceCopy || currentSitemap.isEmpty());
             addStaticActions(actions, sourceRoot, targetRoot);
+
+            final Sitemap updatedSitemap = currentSitemap.apply(actions);
 
             actions.performAll(fileSystem, sourceRoot, targetRoot, new ActionCallback() {
                 @Override
@@ -80,11 +84,20 @@ class Magisto {
                 }
             });
 
+            updatedSitemap.save(fileSystem, targetRoot);
             fileSystem.writeTouchFile(targetRoot);
         } finally {
             statistics.end();
         }
         return statistics;
+    }
+
+    private Sitemap loadCurrentSitemap(Path targetRoot) {
+        try {
+            return Sitemap.load(fileSystem, targetRoot);
+        } catch (IOException e) {
+            return emptySitemap();
+        }
     }
 
     /*
@@ -94,7 +107,7 @@ class Magisto {
     actions on the source files, to detect all files in the target directory that weren't updated. This balanced line
     algorithm is simpler. It's a bit faster too.
      */
-    private void addSourceActions(ActionSet actions, Path sourceRoot, Path targetRoot) throws IOException {
+    private void addSourceActions(ActionSet actions, Path sourceRoot, Path targetRoot, boolean forceOverwrite) throws IOException {
         final FileConverter fileConverter = fileConverterFactory.create(fileSystem, sourceRoot);
         final boolean forceConvert = forceOverwrite
                 || fileConverter.isCustomTemplateChanged(fileSystem, sourceRoot, targetRoot);

@@ -122,7 +122,11 @@ public class DummyFileSystem implements FileSystem {
 
     @Override
     public BufferedReader newBufferedReaderForTextFile(Path path) throws IOException {
-        return new BufferedReader(new StringReader(textFilesForReading.get(path.getFileName().toString())));
+        final String contents = textFilesForReading.get(path.getFileName().toString());
+        if (contents == null) {
+            throw new FileNotFoundException(path.getFileName().toString());
+        }
+        return new BufferedReader(new StringReader(contents));
     }
 
     @Override

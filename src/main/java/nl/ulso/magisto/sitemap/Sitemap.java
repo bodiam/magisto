@@ -16,6 +16,7 @@
 
 package nl.ulso.magisto.sitemap;
 
+import nl.ulso.magisto.action.ActionSet;
 import nl.ulso.magisto.io.FileSystem;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -28,6 +29,7 @@ import java.io.Writer;
 import java.nio.file.Path;
 import java.util.*;
 
+import static java.util.Collections.unmodifiableSortedSet;
 import static nl.ulso.magisto.io.Paths.requireAbsolutePath;
 
 /**
@@ -46,12 +48,18 @@ public class Sitemap {
     // Whenever an incompatible change is introduced in the Sitemap structure, increase this number!
     private static final long CURRENT_VERSION = 1l;
 
-    private final List<Page> pages;
+    private final SortedSet<Page> pages;
 
-    Sitemap(List<Page> pages) {
-        final ArrayList<Page> list = new ArrayList<>(pages);
-        Collections.sort(list);
-        this.pages = Collections.unmodifiableList(list);
+    Sitemap(Set<Page> pages) {
+        this.pages = unmodifiableSortedSet(new TreeSet<>(pages));
+    }
+
+    Sitemap() {
+        this(Collections.<Page>emptySet());
+    }
+
+    public static Sitemap emptySitemap() {
+        return new Sitemap();
     }
 
     public static Sitemap load(FileSystem fileSystem, Path targetRoot) throws IOException {
@@ -64,7 +72,7 @@ public class Sitemap {
                 throw new IOException("Invalid sitemap version: " + version);
             }
             final JSONArray pageArray = (JSONArray) document.get(PAGES_FIELD);
-            final List<Page> pages = new ArrayList<>(pageArray.size());
+            final Set<Page> pages = new HashSet<>(pageArray.size());
             for (final Object object : pageArray) {
                 pages.add(Page.fromJSONObject((JSONObject) object));
             }
@@ -74,7 +82,7 @@ public class Sitemap {
         }
     }
 
-    public List<Page> getPages() {
+    public Set<Page> getPages() {
         return pages;
     }
 
@@ -93,5 +101,20 @@ public class Sitemap {
         try (final Writer writer = fileSystem.newBufferedWriterForTextFile(path)) {
             document.writeJSONString(writer);
         }
+    }
+
+    /**
+     * Applies all applicable actions in the ActionSet to this sitemap and returns a new, updated sitemap.
+     *
+     * @param actions The set of actions to apply.
+     * @return A new sitemap, based on the current one, with all applicable actions applied.
+     */
+    public Sitemap apply(ActionSet actions) {
+        // TODO: implement this method
+        return this;
+    }
+
+    public boolean isEmpty() {
+        return pages.isEmpty();
     }
 }

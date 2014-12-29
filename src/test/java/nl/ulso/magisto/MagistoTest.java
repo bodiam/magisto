@@ -20,6 +20,7 @@ import nl.ulso.magisto.action.DummyActionFactory;
 import nl.ulso.magisto.converter.DummyFileConverterFactory;
 import nl.ulso.magisto.io.DummyFileSystem;
 import nl.ulso.magisto.io.DummyPathEntry;
+import nl.ulso.magisto.sitemap.SitemapTest;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -93,6 +94,8 @@ public class MagistoTest {
 
     @Test
     public void testMultipleSourceAndTargetFiles() throws Exception {
+        // Prepare a basic sitemap, because not having it implies a forced convert
+        fileSystem.registerTextFileForBufferedReader(".magisto-sitemap", SitemapTest.SITEMAP_JSON);
         prepareMultipleSourceAndTargetFiles();
         runTest(
                 3, // sameFile1, sameFile2, foo.convert/foo.convert.converted

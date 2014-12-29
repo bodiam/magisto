@@ -20,8 +20,8 @@ import nl.ulso.magisto.io.DummyFileSystem;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
@@ -34,7 +34,7 @@ public class SitemapTest {
 
     @Test
     public void testWrite() throws Exception {
-        final List<Page> pages = new ArrayList<>();
+        final Set<Page> pages = new HashSet<>();
         pages.add(new Page("dir1", "file1", "Test 1"));
         pages.add(new Page("dir2", "file2", "Test 2"));
         final Sitemap sitemap = new Sitemap(pages);
@@ -49,7 +49,7 @@ public class SitemapTest {
         fileSystem.registerTextFileForBufferedReader(".magisto-sitemap", SITEMAP_JSON);
         final Sitemap sitemap = Sitemap.load(fileSystem, fileSystem.prepareTargetDirectory(""));
         assertEquals(2, sitemap.getPages().size());
-        final Page page1 = sitemap.getPages().get(0);
+        final Page page1 = sitemap.getPages().iterator().next();
         assertEquals("Test 1", page1.getTitle());
         assertEquals("dir1", page1.getDirectory());
         assertEquals("file1", page1.getFile());
