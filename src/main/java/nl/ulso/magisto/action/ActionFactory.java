@@ -23,15 +23,40 @@ import java.nio.file.Path;
  */
 public interface ActionFactory {
 
+    /**
+     * @param path Path in the source tree to skip because it hasn't changed since the last export.
+     * @return Skip action, useful for statistics tracking.
+     */
     Action skipSource(Path path);
 
+    /**
+     * @param path Path in the static tree to skip because it hasn't changed since the last export.
+     * @return Skip action, useful for statistics tracking.
+     */
     Action skipStatic(Path path);
 
+    /**
+     * @param path Path to copy from the source tree to the target tree.
+     * @return Copy action.
+     */
     Action copySource(Path path);
 
+    /**
+     * @param path Path to copy from the static tree to the target tree.
+     * @return Copy action.
+     */
     Action copyStatic(Path path);
 
+    /**
+     * @param path Path to a document in the source tree to convert to a different format in the target tree.
+     * @return Convert action.
+     */
     Action convertSource(Path path);
 
+    /**
+     * @param path Path to a document in the target tree that must be deleted because it's no longer present in the
+     *             source or static tree.
+     * @return Delete action.
+     */
     Action deleteTarget(Path path);
 }
