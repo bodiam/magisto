@@ -28,6 +28,8 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static java.util.Collections.unmodifiableSortedSet;
 import static nl.ulso.magisto.io.Paths.requireAbsolutePath;
@@ -76,6 +78,7 @@ public class Sitemap {
             for (final Object object : pageArray) {
                 pages.add(Page.fromJSONObject((JSONObject) object));
             }
+            Logger.getGlobal().log(Level.FINE, String.format("Loaded an existing sitemap with %d pages.", pages.size()));
             return new Sitemap(pages);
         } catch (ParseException e) {
             throw new IOException(e);
@@ -101,6 +104,7 @@ public class Sitemap {
         try (final Writer writer = fileSystem.newBufferedWriterForTextFile(path)) {
             document.writeJSONString(writer);
         }
+        Logger.getGlobal().log(Level.FINE, String.format("Wrote a new sitemap with %d pages.", pages.size()));
     }
 
     /**
@@ -110,6 +114,7 @@ public class Sitemap {
      * @return A new sitemap, based on the current one, with all changes applied.
      */
     public Sitemap apply(List<Change> changes, DocumentLoader documentLoader) throws IOException {
+        Logger.getGlobal().log(Level.FINE, String.format("Detected %d changes to the existing sitemap.", changes.size()));
         final Set<Page> pages = new HashSet<>(this.pages);
         for (Change change : changes) {
             final Path path = change.getPath();
