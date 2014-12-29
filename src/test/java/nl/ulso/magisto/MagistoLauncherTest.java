@@ -16,7 +16,6 @@
 
 package nl.ulso.magisto;
 
-import nl.ulso.magisto.io.DummyFileSystem;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -125,7 +124,7 @@ public class MagistoLauncherTest {
 
     private static final class DummyMagisto extends Magisto {
         private DummyMagisto() {
-            super(false, new DummyFileSystem(), new DummyMagistoFactory());
+            super(false, new DummyMagistoFactoryBuilder());
         }
 
         @Override
@@ -136,7 +135,7 @@ public class MagistoLauncherTest {
 
     private static final class DummyMagistoWithIOException extends Magisto {
         private DummyMagistoWithIOException() {
-            super(false, new DummyFileSystem(), new DummyMagistoFactory());
+            super(false, new DummyMagistoFactoryBuilder());
         }
 
         @Override

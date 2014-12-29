@@ -28,22 +28,27 @@ import java.nio.file.Path;
 public interface MagistoFactory {
 
     /**
-     * @param sourceRoot Absolute path that serves as the root for all documents to load.
-     * @return A document loader for documents in {@code sourceRoot}.
+     * @return The path that serves as the root for all sources accessed by components created by this factory.
      */
-    DocumentLoader createDocumentLoader(Path sourceRoot);
+    Path getSourceRoot();
 
     /**
-     * @param sourceRoot Absolute path that serves as the root for all documents to load.
-     * @param targetRoot Absolute path that serves as the root for all conversion results.
-     * @return A document converter that reads documents in {@code sourceRoot} and stores them in {@code targetRoot}.
+     * @return The path that serves as the root for all targets accessed by components created by this factory.
      */
-    DocumentConverter createDocumentConverter(Path sourceRoot, Path targetRoot);
+    Path getTargetRoot();
 
     /**
-     * @param sourceRoot Absolute path that serves as the source root for actions.
-     * @param targetRoot Absolute path that serves as the target root for actions.
-     * @return A factory for actions that perform on {@code sourceRoot} and/or {@code targetRoot}.
+     * @return A loader for documents in the source root.
      */
-    ActionFactory createActionFactory(Path sourceRoot, Path targetRoot);
+    DocumentLoader createDocumentLoader();
+
+    /**
+     * @return A converter for documents in the source root that stores the results in the target root.
+     */
+    DocumentConverter createDocumentConverter();
+
+    /**
+     * @return A factory for actions that operate on files in the the source and/or target roots.
+     */
+    ActionFactory createActionFactory();
 }

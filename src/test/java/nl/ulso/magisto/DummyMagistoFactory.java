@@ -19,37 +19,49 @@ package nl.ulso.magisto;
 import nl.ulso.magisto.action.ActionFactory;
 import nl.ulso.magisto.action.DummyActionFactory;
 import nl.ulso.magisto.converter.DocumentConverter;
-import nl.ulso.magisto.loader.DocumentLoader;
 import nl.ulso.magisto.converter.DummyDocumentConverter;
+import nl.ulso.magisto.loader.DocumentLoader;
 import nl.ulso.magisto.loader.DummyDocumentLoader;
 
 import java.nio.file.Path;
 
 public class DummyMagistoFactory implements MagistoFactory {
 
-    private final DummyActionFactory dummyActionFactory = new DummyActionFactory();
-    private boolean customTemplateChanged = false;
+    private final Path sourceRoot;
+    private final Path targetRoot;
+    private final DummyActionFactory actionFactory;
+    private boolean isCustomTemplateChanged;
+
+    public DummyMagistoFactory(Path sourceRoot, Path targetRoot, DummyActionFactory actionFactory,
+                               boolean isCustomTemplateChanged) {
+        this.sourceRoot = sourceRoot;
+        this.targetRoot = targetRoot;
+        this.actionFactory = actionFactory;
+        this.isCustomTemplateChanged = isCustomTemplateChanged;
+    }
 
     @Override
-    public DocumentLoader createDocumentLoader(Path sourceRoot) {
+    public Path getSourceRoot() {
+        return sourceRoot;
+    }
+
+    @Override
+    public Path getTargetRoot() {
+        return targetRoot;
+    }
+
+    @Override
+    public DocumentLoader createDocumentLoader() {
         return new DummyDocumentLoader(sourceRoot);
     }
 
     @Override
-    public DocumentConverter createDocumentConverter(Path sourceRoot, Path targetRoot) {
-        return new DummyDocumentConverter(sourceRoot, targetRoot, customTemplateChanged);
+    public DocumentConverter createDocumentConverter() {
+        return new DummyDocumentConverter(sourceRoot, targetRoot, isCustomTemplateChanged);
     }
 
     @Override
-    public ActionFactory createActionFactory(Path sourceRoot, Path targetRoot) {
-        return dummyActionFactory;
-    }
-
-    public void setCustomTemplateChanged() {
-        this.customTemplateChanged = true;
-    }
-
-    public DummyActionFactory getDummyActionFactory() {
-        return dummyActionFactory;
+    public ActionFactory createActionFactory() {
+        return actionFactory;
     }
 }

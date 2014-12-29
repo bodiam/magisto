@@ -19,6 +19,7 @@ package nl.ulso.magisto;
 import nl.ulso.magisto.git.GitClient;
 import nl.ulso.magisto.git.GitClientStub;
 import nl.ulso.magisto.git.JGitClient;
+import nl.ulso.magisto.io.FileSystem;
 import nl.ulso.magisto.io.RealFileSystem;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -57,9 +58,9 @@ public class MagistoMojo extends AbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         final Handler consoleHandler = configureLogging(verbose);
         final GitClient gitClient = createGitClient(sourceDirectory);
-        final RealFileSystem fileSystem = new RealFileSystem();
-        final RealMagistoFactory magistoFactory = new RealMagistoFactory(fileSystem, gitClient);
-        final Magisto magisto = new Magisto(forceOverwrite, fileSystem, magistoFactory);
+        final FileSystem fileSystem = new RealFileSystem();
+        final MagistoFactoryBuilder magistoFactoryBuilder = new RealMagistoFactoryBuilder(fileSystem, gitClient);
+        final Magisto magisto = new Magisto(forceOverwrite, magistoFactoryBuilder);
         try {
             magisto.run(sourceDirectory, targetDirectory).log();
         } catch (IOException e) {

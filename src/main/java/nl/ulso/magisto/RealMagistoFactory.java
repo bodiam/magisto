@@ -19,62 +19,57 @@ package nl.ulso.magisto;
 import nl.ulso.magisto.action.ActionFactory;
 import nl.ulso.magisto.action.RealActionFactory;
 import nl.ulso.magisto.converter.DocumentConverter;
-import nl.ulso.magisto.loader.DocumentLoader;
 import nl.ulso.magisto.converter.freemarker.FreeMarkerDocumentConverter;
-import nl.ulso.magisto.loader.markdown.MarkdownDocumentLoader;
 import nl.ulso.magisto.git.GitClient;
 import nl.ulso.magisto.io.FileSystem;
+import nl.ulso.magisto.loader.DocumentLoader;
+import nl.ulso.magisto.loader.markdown.MarkdownDocumentLoader;
 
 import java.nio.file.Path;
-
-import static nl.ulso.magisto.io.Paths.requireAbsolutePath;
 
 /**
  * Factory implementation that caches its creations. It's purely single threaded!
  */
 public class RealMagistoFactory implements MagistoFactory {
 
-    private final FileSystem filesystem;
-    private final GitClient gitClient;
+    private final FileSystem fileSystem;
+    private final Path sourceRoot;
+    private final Path targetRoot;
+    private final DocumentLoader documentLoader;
+    private final DocumentConverter documentConverter;
+    private final ActionFactory actionFactory;
 
-    private DocumentLoader documentLoader;
-    private DocumentConverter documentConverter;
-    private ActionFactory actionFactory;
-
-    public RealMagistoFactory(FileSystem filesystem, GitClient gitClient) {
-        this.filesystem = filesystem;
-        this.gitClient = gitClient;
-        documentLoader = null;
-        documentConverter = null;
-        actionFactory = null;
+    public RealMagistoFactory(FileSystem filesystem, GitClient gitClient, Path sourceRoot, Path targetRoot) {
+        this.fileSystem = filesystem;
+        this.sourceRoot = sourceRoot;
+        this.targetRoot = targetRoot;
+        documentLoader = new MarkdownDocumentLoader(filesystem, sourceRoot, gitClient);
+        documentConverter = new FreeMarkerDocumentConverter(filesystem, documentLoader, targetRoot);
+        actionFactory = new RealActionFactory(filesystem, documentConverter);
     }
 
     @Override
-    public DocumentLoader createDocumentLoader(Path sourceRoot) {
-        if (documentLoader == null) {
-            requireAbsolutePath(sourceRoot);
-            documentLoader = new MarkdownDocumentLoader(filesystem, sourceRoot, gitClient);
-        }
+    public Path getSourceRoot() {
+        return sourceRoot;
+    }
+
+    @Override
+    public Path getTargetRoot() {
+        return targetRoot;
+    }
+
+    @Override
+    public DocumentLoader createDocumentLoader() {
         return documentLoader;
     }
 
     @Override
-    public DocumentConverter createDocumentConverter(Path sourceRoot, Path targetRoot) {
-        if (documentConverter == null) {
-            requireAbsolutePath(sourceRoot);
-            requireAbsolutePath(targetRoot);
-            documentConverter = new FreeMarkerDocumentConverter(filesystem, createDocumentLoader(sourceRoot), targetRoot);
-        }
+    public DocumentConverter createDocumentConverter() {
         return documentConverter;
     }
 
     @Override
-    public ActionFactory createActionFactory(Path sourceRoot, Path targetRoot) {
-        if (actionFactory == null) {
-            requireAbsolutePath(sourceRoot);
-            requireAbsolutePath(targetRoot);
-            actionFactory = new RealActionFactory(filesystem, createDocumentConverter(sourceRoot, targetRoot));
-        }
+    public ActionFactory createActionFactory() {
         return actionFactory;
     }
 }

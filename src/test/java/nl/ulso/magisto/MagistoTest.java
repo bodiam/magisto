@@ -32,14 +32,14 @@ import static org.junit.Assert.assertEquals;
 public class MagistoTest {
 
     private DummyFileSystem fileSystem;
-    private DummyMagistoFactory magistoFactory;
+    private DummyMagistoFactoryBuilder magistoFactoryBuilder;
     private Magisto magisto;
 
     @Before
     public void setUp() throws Exception {
-        fileSystem = new DummyFileSystem();
-        magistoFactory = new DummyMagistoFactory();
-        magisto = new Magisto(false, fileSystem, magistoFactory);
+        magistoFactoryBuilder = new DummyMagistoFactoryBuilder();
+        fileSystem = (DummyFileSystem) magistoFactoryBuilder.getFileSystem();
+        magisto = new Magisto(false, magistoFactoryBuilder);
     }
 
     @Test
@@ -107,8 +107,8 @@ public class MagistoTest {
     @Test
     public void testMultipleSourceAndTargetFilesWithDetectedOverwrite() throws Exception {
         prepareMultipleSourceAndTargetFiles();
-        magistoFactory.setCustomTemplateChanged();
-        magisto = new Magisto(false, fileSystem, magistoFactory);
+        magistoFactoryBuilder.setCustomTemplateChanged();
+        magisto = new Magisto(false, magistoFactoryBuilder);
         runTest(
                 2, // sameFile1, sameFile2
                 1, // baz.txt
@@ -121,7 +121,7 @@ public class MagistoTest {
 
     @Test
     public void testMultipleSourceAndTargetFilesWithForcedOverwrite() throws Exception {
-        magisto = new Magisto(true, fileSystem, magistoFactory);
+        magisto = new Magisto(true, magistoFactoryBuilder);
         prepareMultipleSourceAndTargetFiles();
         runTest(
                 0, // no skips: forced overwrite
@@ -181,7 +181,7 @@ public class MagistoTest {
         final Statistics statistics = magisto.run("source", "target");
         System.out.println(statistics);
         // Number of actions performed must match up:
-        final DummyActionFactory actionFactory = magistoFactory.getDummyActionFactory();
+        final DummyActionFactory actionFactory = magistoFactoryBuilder.getDummyActionFactory();
         assertEquals(expectedSourceSkips, actionFactory.countFor(SKIP_SOURCE));
         assertEquals(expectedSourceCopies, actionFactory.countFor(COPY_SOURCE));
         assertEquals(expectedSourceConversions, actionFactory.countFor(CONVERT_SOURCE));

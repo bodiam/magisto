@@ -39,13 +39,13 @@ class Magisto {
     private static final String STATIC_CONTENT_DIRECTORY = ".static";
 
     private final boolean forceCopy;
+    private final MagistoFactoryBuilder magistoFactoryBuilder;
     private final FileSystem fileSystem;
-    private final MagistoFactory magistoFactory;
 
-    public Magisto(boolean forceOverwrite, FileSystem fileSystem, MagistoFactory magistoFactory) {
+    public Magisto(boolean forceOverwrite, MagistoFactoryBuilder magistoFactoryBuilder) {
         this.forceCopy = forceOverwrite;
-        this.fileSystem = fileSystem;
-        this.magistoFactory = magistoFactory;
+        this.magistoFactoryBuilder = magistoFactoryBuilder;
+        this.fileSystem = magistoFactoryBuilder.getFileSystem();
     }
 
     /*
@@ -65,14 +65,19 @@ class Magisto {
             final Path targetRoot = fileSystem.prepareTargetDirectory(targetDirectory);
             fileSystem.requireDistinct(sourceRoot, targetRoot);
 
+            final MagistoFactory magistoFactory = magistoFactoryBuilder
+                    .withSourceRoot(sourceRoot)
+                    .withTargetRoot(targetRoot)
+                    .build();
+
             final Sitemap currentSitemap = loadCurrentSitemap(targetRoot);
 
-            final ActionSet actions = new ActionSet(magistoFactory.createActionFactory(sourceRoot, targetRoot));
-            addSourceActions(actions, sourceRoot, targetRoot, forceCopy || currentSitemap.isEmpty());
-            addStaticActions(actions, sourceRoot, targetRoot);
+            final ActionSet actions = new ActionSet(magistoFactory.createActionFactory());
+            addSourceActions(actions, magistoFactory, forceCopy || currentSitemap.isEmpty());
+            addStaticActions(actions, magistoFactory);
 
             final Sitemap updatedSitemap = currentSitemap.apply(actions.computeChanges(),
-                    magistoFactory.createDocumentLoader(sourceRoot));
+                    magistoFactory.createDocumentLoader());
 
             actions.performAll(new ActionCallback() {
                 @Override
@@ -104,11 +109,15 @@ class Magisto {
     actions on the source files, to detect all files in the target directory that weren't updated. This balanced line
     algorithm is simpler. It's a bit faster too.
      */
-    private void addSourceActions(ActionSet actions, Path sourceRoot, Path targetRoot, boolean forceOverwrite)
+    private void addSourceActions(ActionSet actions, MagistoFactory magistoFactory, boolean forceOverwrite)
             throws IOException {
-        final DocumentLoader documentLoader = magistoFactory.createDocumentLoader(sourceRoot);
-        final DocumentConverter documentConverter = magistoFactory.createDocumentConverter(sourceRoot, targetRoot);
+        final Path sourceRoot = magistoFactory.getSourceRoot();
+        final Path targetRoot = magistoFactory.getTargetRoot();
+
+        final DocumentLoader documentLoader = magistoFactory.createDocumentLoader();
+        final DocumentConverter documentConverter = magistoFactory.createDocumentConverter();
         final boolean forceConvert = forceOverwrite || documentConverter.isCustomTemplateChanged();
+
         final Iterator<Path> sources = fileSystem.findAllPaths(sourceRoot,
                 prioritizeOnExtension(documentLoader.getSupportedExtensions())).iterator();
         final Iterator<Path> targets = fileSystem.findAllPaths(targetRoot,
@@ -151,11 +160,15 @@ class Magisto {
         }
     }
 
-    private void addStaticActions(ActionSet actions, Path sourceRoot, Path targetRoot) throws IOException {
+    private void addStaticActions(ActionSet actions, MagistoFactory magistoFactory) throws IOException {
+        final Path sourceRoot = magistoFactory.getSourceRoot();
         final Path staticRoot = sourceRoot.resolve(STATIC_CONTENT_DIRECTORY);
+
         if (fileSystem.notExists(staticRoot)) {
             return;
         }
+
+        final Path targetRoot = magistoFactory.getTargetRoot();
         final SortedSet<Path> staticPaths = fileSystem.findAllPaths(staticRoot);
         for (Path staticPath : staticPaths) {
             final Path targetPath = targetRoot.resolve(staticPath);

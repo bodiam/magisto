@@ -22,6 +22,7 @@ import com.lexicalscope.jewel.cli.ValidationFailure;
 import nl.ulso.magisto.git.GitClient;
 import nl.ulso.magisto.git.GitClientStub;
 import nl.ulso.magisto.git.JGitClient;
+import nl.ulso.magisto.io.FileSystem;
 import nl.ulso.magisto.io.RealFileSystem;
 
 import java.io.IOException;
@@ -97,9 +98,9 @@ public class MagistoLauncher {
         if (DUMMY_MAGISTO != null) {
             return DUMMY_MAGISTO;
         }
-        final RealFileSystem fileSystem = new RealFileSystem();
-        final RealMagistoFactory magistoFactory = new RealMagistoFactory(fileSystem, gitClient);
-        return new Magisto(forceOverwrite, fileSystem, magistoFactory);
+        final FileSystem fileSystem = new RealFileSystem();
+        final MagistoFactoryBuilder magistoFactoryBuilder = new RealMagistoFactoryBuilder(fileSystem, gitClient);
+        return new Magisto(forceOverwrite, magistoFactoryBuilder);
     }
 
     private static void run(Magisto magisto, String sourceDirectory, String targetDirectory) {
