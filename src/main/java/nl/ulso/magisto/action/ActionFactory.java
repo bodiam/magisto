@@ -29,7 +29,7 @@ public interface ActionFactory {
 
     Action copySource(Path path);
 
-    Action copyStatic(String staticContentDirectory, Path path);
+    Action copyStatic(Path path);
 
     Action convertSource(Path path);
 

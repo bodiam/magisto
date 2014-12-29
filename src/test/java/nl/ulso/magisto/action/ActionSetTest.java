@@ -40,7 +40,7 @@ public class ActionSetTest {
     public void testStaticCopyReplacesSourceDelete() throws Exception {
         final ActionSet actions = new ActionSet(new DummyActionFactory());
         actions.addDeleteTargetAction(createPath("file"));
-        actions.addCopyStaticAction(".", createPath("file"));
+        actions.addCopyStaticAction(createPath("file"));
         final List<Action> performed = performActions(actions);
         assertEquals(1, performed.size());
         assertEquals(ActionType.COPY_STATIC, performed.get(0).getActionType());
@@ -59,7 +59,7 @@ public class ActionSetTest {
     @Test
     public void testSourceCopyReplacesStaticCopy() throws Exception {
         final ActionSet actions = new ActionSet(new DummyActionFactory());
-        actions.addCopyStaticAction(".", createPath("file"));
+        actions.addCopyStaticAction(createPath("file"));
         actions.addCopySourceAction(createPath("file"));
         final List<Action> performed = performActions(actions);
         assertEquals(1, performed.size());
@@ -70,7 +70,7 @@ public class ActionSetTest {
     public void testSourceSkipReplacesStaticCopy() throws Exception {
         final ActionSet actions = new ActionSet(new DummyActionFactory());
         actions.addSkipSourceAction(createPath("file"));
-        actions.addCopyStaticAction(".", createPath("file"));
+        actions.addCopyStaticAction(createPath("file"));
         final List<Action> performed = performActions(actions);
         assertEquals(1, performed.size());
         assertEquals(ActionType.SKIP_SOURCE, performed.get(0).getActionType());

@@ -34,12 +34,11 @@ class CopyStaticAction extends AbstractAction {
     private final Path staticRoot;
     private final Path targetRoot;
 
-    CopyStaticAction(FileSystem fileSystem, Path sourceRoot, String staticContentDirectory, Path targetRoot, Path path) {
+    CopyStaticAction(FileSystem fileSystem, Path staticRoot, Path targetRoot, Path path) {
         super(path, STATIC);
         this.fileSystem = fileSystem;
-        this.staticRoot = requireAbsolutePath(sourceRoot).resolve(staticContentDirectory);
+        this.staticRoot = requireAbsolutePath(staticRoot);
         this.targetRoot = requireAbsolutePath(targetRoot);
-
     }
 
     @Override

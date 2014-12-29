@@ -43,13 +43,13 @@ public class CopyStaticActionTest {
     @Test
     public void testActionType() throws Exception {
         assertEquals(ActionType.COPY_STATIC, new CopyStaticAction(
-                fileSystem, sourceRoot, ".", targetRoot, createPath("copy")).getActionType());
+                fileSystem, sourceRoot, targetRoot, createPath("copy")).getActionType());
     }
 
     @Test
     public void testActionCategory() throws Exception {
         assertEquals(ActionCategory.STATIC, new CopyStaticAction(
-                fileSystem, sourceRoot, ".", targetRoot, createPath("copy")).getActionCategory());
+                fileSystem, sourceRoot, targetRoot, createPath("copy")).getActionCategory());
     }
 
     @Test
@@ -58,7 +58,7 @@ public class CopyStaticActionTest {
         final Path sourceRoot = fileSystem.resolveSourceDirectory("source");
         final Path targetRoot = fileSystem.prepareTargetDirectory("target");
         final DummyPathEntry entry = createPathEntry("file");
-        new CopyStaticAction(fileSystem, sourceRoot, ".static", targetRoot, entry.getPath()).perform();
+        new CopyStaticAction(fileSystem, sourceRoot.resolve(".static"), targetRoot, entry.getPath()).perform();
         assertEquals(".static:file -> target", fileSystem.getLoggedCopies());
     }
 }

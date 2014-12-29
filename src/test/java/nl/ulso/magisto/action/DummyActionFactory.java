@@ -43,7 +43,7 @@ public class DummyActionFactory implements ActionFactory {
     }
 
     @Override
-    public Action copyStatic(String staticContentDirectory, Path path) {
+    public Action copyStatic(Path path) {
         return new DummyAction(this, path, STATIC, COPY_STATIC);
     }
 

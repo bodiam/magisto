@@ -35,7 +35,8 @@ public class RealActionFactoryTest {
         final DummyFileSystem fileSystem = new DummyFileSystem();
         final Path sourceRoot = fileSystem.resolveSourceDirectory("source");
         final Path targetRoot = fileSystem.prepareTargetDirectory("target");
-        factory = new RealActionFactory(fileSystem, new DummyDocumentConverter(sourceRoot, targetRoot));
+        factory = new RealActionFactory(fileSystem, new DummyDocumentConverter(sourceRoot, targetRoot),
+                sourceRoot.resolve(".static"));
 
     }
 
@@ -56,7 +57,7 @@ public class RealActionFactoryTest {
 
     @Test
     public void testCopyStaticAction() throws Exception {
-        assertNotNull(factory.copyStatic(".", createPath("copy")));
+        assertNotNull(factory.copyStatic(createPath("copy")));
     }
 
     @Test

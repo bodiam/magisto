@@ -62,8 +62,8 @@ public class ActionSet {
         add(actionFactory.copySource(path));
     }
 
-    public void addCopyStaticAction(String staticContentDirectory, Path path) {
-        add(actionFactory.copyStatic(staticContentDirectory, path));
+    public void addCopyStaticAction(Path path) {
+        add(actionFactory.copyStatic(path));
     }
 
     public void addConvertSourceAction(Path path) {

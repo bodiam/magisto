@@ -46,6 +46,11 @@ public class DummyMagistoFactory implements MagistoFactory {
     }
 
     @Override
+    public Path getStaticRoot() {
+        return sourceRoot.resolve(STATIC_CONTENT_DIRECTORY);
+    }
+
+    @Override
     public Path getTargetRoot() {
         return targetRoot;
     }

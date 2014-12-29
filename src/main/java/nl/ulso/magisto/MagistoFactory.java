@@ -27,10 +27,17 @@ import java.nio.file.Path;
  */
 public interface MagistoFactory {
 
+    static final String STATIC_CONTENT_DIRECTORY = ".static";
+
     /**
      * @return The path that serves as the root for all sources accessed by components created by this factory.
      */
     Path getSourceRoot();
+
+    /**
+     * @return The path that serves as the root for static content that needs to be copied to the target root.
+     */
+    Path getStaticRoot();
 
     /**
      * @return The path that serves as the root for all targets accessed by components created by this factory.

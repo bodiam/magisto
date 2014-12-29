@@ -32,25 +32,30 @@ import java.nio.file.Path;
  */
 public class RealMagistoFactory implements MagistoFactory {
 
-    private final FileSystem fileSystem;
     private final Path sourceRoot;
     private final Path targetRoot;
+    private final Path staticRoot;
     private final DocumentLoader documentLoader;
     private final DocumentConverter documentConverter;
     private final ActionFactory actionFactory;
 
     public RealMagistoFactory(FileSystem filesystem, GitClient gitClient, Path sourceRoot, Path targetRoot) {
-        this.fileSystem = filesystem;
         this.sourceRoot = sourceRoot;
+        this.staticRoot = sourceRoot.resolve(STATIC_CONTENT_DIRECTORY);
         this.targetRoot = targetRoot;
-        documentLoader = new MarkdownDocumentLoader(filesystem, sourceRoot, gitClient);
-        documentConverter = new FreeMarkerDocumentConverter(filesystem, documentLoader, targetRoot);
-        actionFactory = new RealActionFactory(filesystem, documentConverter);
+        this.documentLoader = new MarkdownDocumentLoader(filesystem, sourceRoot, gitClient);
+        this.documentConverter = new FreeMarkerDocumentConverter(filesystem, documentLoader, targetRoot);
+        this.actionFactory = new RealActionFactory(filesystem, documentConverter, staticRoot);
     }
 
     @Override
     public Path getSourceRoot() {
         return sourceRoot;
+    }
+
+    @Override
+    public Path getStaticRoot() {
+        return staticRoot;
     }
 
     @Override

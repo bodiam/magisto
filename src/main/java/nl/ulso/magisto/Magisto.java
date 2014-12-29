@@ -36,7 +36,6 @@ import static nl.ulso.magisto.sitemap.Sitemap.emptySitemap;
  * Knits all the components in the Magisto system together (like a module) and runs it.
  */
 class Magisto {
-    private static final String STATIC_CONTENT_DIRECTORY = ".static";
 
     private final boolean forceCopy;
     private final MagistoFactoryBuilder magistoFactoryBuilder;
@@ -161,8 +160,7 @@ class Magisto {
     }
 
     private void addStaticActions(ActionSet actions, MagistoFactory magistoFactory) throws IOException {
-        final Path sourceRoot = magistoFactory.getSourceRoot();
-        final Path staticRoot = sourceRoot.resolve(STATIC_CONTENT_DIRECTORY);
+        final Path staticRoot = magistoFactory.getStaticRoot();
 
         if (fileSystem.notExists(staticRoot)) {
             return;
@@ -174,7 +172,7 @@ class Magisto {
             final Path targetPath = targetRoot.resolve(staticPath);
             if (forceCopy || fileSystem.notExists(targetPath)
                     || isSourceNewerThanTarget(staticRoot.resolve(staticPath), targetPath)) {
-                actions.addCopyStaticAction(STATIC_CONTENT_DIRECTORY, staticPath);
+                actions.addCopyStaticAction(staticPath);
             } else {
                 actions.addSkipStaticAction(staticPath);
             }

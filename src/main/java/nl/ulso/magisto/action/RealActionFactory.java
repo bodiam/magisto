@@ -29,12 +29,14 @@ public class RealActionFactory implements ActionFactory {
     private final FileSystem fileSystem;
     private final DocumentConverter documentConverter;
     private final Path sourceRoot;
+    private final Path staticRoot;
     private final Path targetRoot;
 
-    public RealActionFactory(FileSystem fileSystem, DocumentConverter documentConverter) {
+    public RealActionFactory(FileSystem fileSystem, DocumentConverter documentConverter, Path staticRoot) {
         this.fileSystem = fileSystem;
         this.documentConverter = documentConverter;
         this.sourceRoot = documentConverter.getSourceRoot();
+        this.staticRoot = staticRoot;
         this.targetRoot = documentConverter.getTargetRoot();
     }
 
@@ -54,8 +56,8 @@ public class RealActionFactory implements ActionFactory {
     }
 
     @Override
-    public Action copyStatic(String staticContentDirectory, Path path) {
-        return new CopyStaticAction(fileSystem, sourceRoot, staticContentDirectory, targetRoot, path);
+    public Action copyStatic(Path path) {
+        return new CopyStaticAction(fileSystem, staticRoot, targetRoot, path);
     }
 
     @Override
