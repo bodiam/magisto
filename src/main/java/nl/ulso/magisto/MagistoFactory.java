@@ -22,11 +22,28 @@ import nl.ulso.magisto.loader.DocumentLoader;
 
 import java.nio.file.Path;
 
+/**
+ * Factory for the main components of Magisto.
+ */
 public interface MagistoFactory {
 
+    /**
+     * @param sourceRoot Absolute path that serves as the root for all documents to load.
+     * @return A document loader for documents in {@code sourceRoot}.
+     */
     DocumentLoader createDocumentLoader(Path sourceRoot);
 
+    /**
+     * @param sourceRoot Absolute path that serves as the root for all documents to load.
+     * @param targetRoot Absolute path that serves as the root for all conversion results.
+     * @return A document converter that reads documents in {@code sourceRoot} and stores them in {@code targetRoot}.
+     */
     DocumentConverter createDocumentConverter(Path sourceRoot, Path targetRoot);
 
+    /**
+     * @param sourceRoot Absolute path that serves as the source root for actions.
+     * @param targetRoot Absolute path that serves as the target root for actions.
+     * @return A factory for actions that perform on {@code sourceRoot} and/or {@code targetRoot}.
+     */
     ActionFactory createActionFactory(Path sourceRoot, Path targetRoot);
 }

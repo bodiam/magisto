@@ -27,6 +27,11 @@ import nl.ulso.magisto.io.FileSystem;
 
 import java.nio.file.Path;
 
+import static nl.ulso.magisto.io.Paths.requireAbsolutePath;
+
+/**
+ * Factory implementation that caches its creations. It's purely single threaded!
+ */
 public class RealMagistoFactory implements MagistoFactory {
 
     private final FileSystem filesystem;
@@ -47,6 +52,7 @@ public class RealMagistoFactory implements MagistoFactory {
     @Override
     public DocumentLoader createDocumentLoader(Path sourceRoot) {
         if (documentLoader == null) {
+            requireAbsolutePath(sourceRoot);
             documentLoader = new MarkdownDocumentLoader(filesystem, sourceRoot, gitClient);
         }
         return documentLoader;
@@ -55,6 +61,8 @@ public class RealMagistoFactory implements MagistoFactory {
     @Override
     public DocumentConverter createDocumentConverter(Path sourceRoot, Path targetRoot) {
         if (documentConverter == null) {
+            requireAbsolutePath(sourceRoot);
+            requireAbsolutePath(targetRoot);
             documentConverter = new FreeMarkerDocumentConverter(filesystem, createDocumentLoader(sourceRoot), targetRoot);
         }
         return documentConverter;
@@ -63,6 +71,8 @@ public class RealMagistoFactory implements MagistoFactory {
     @Override
     public ActionFactory createActionFactory(Path sourceRoot, Path targetRoot) {
         if (actionFactory == null) {
+            requireAbsolutePath(sourceRoot);
+            requireAbsolutePath(targetRoot);
             actionFactory = new RealActionFactory(filesystem, createDocumentConverter(sourceRoot, targetRoot));
         }
         return actionFactory;
