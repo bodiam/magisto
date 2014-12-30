@@ -30,7 +30,7 @@ import java.nio.file.Path;
 /**
  * Factory implementation that caches its creations. It's purely single threaded!
  */
-public class RealMagistoFactory implements MagistoFactory {
+class RealMagistoFactory implements MagistoFactory {
 
     private final Path sourceRoot;
     private final Path targetRoot;
@@ -39,7 +39,7 @@ public class RealMagistoFactory implements MagistoFactory {
     private final DocumentConverter documentConverter;
     private final ActionFactory actionFactory;
 
-    public RealMagistoFactory(FileSystem filesystem, GitClient gitClient, Path sourceRoot, Path targetRoot) {
+    RealMagistoFactory(FileSystem filesystem, GitClient gitClient, Path sourceRoot, Path targetRoot) {
         this.sourceRoot = sourceRoot;
         this.staticRoot = sourceRoot.resolve(STATIC_CONTENT_DIRECTORY);
         this.targetRoot = targetRoot;
