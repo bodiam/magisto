@@ -68,23 +68,28 @@ public class DummyFileSystem implements FileSystem {
 
     @Override
     public SortedSet<Path> findAllPaths(Path root) throws IOException {
-        return findAllPaths(root, new Comparator<Path>() {
-            @Override
-            public int compare(Path o1, Path o2) {
-                return o1.compareTo(o2);
-            }
-        });
+        return findAllPaths(root, DEFAULT_PATH_FILTER, DEFAULT_PATH_COMPARATOR);
     }
 
     @Override
     public SortedSet<Path> findAllPaths(Path root, Comparator<? super Path> comparator) throws IOException {
+        return findAllPaths(root, DEFAULT_PATH_FILTER, comparator);
+    }
+
+    @Override
+    public SortedSet<Path> findAllPaths(Path root, PathFilter filter) throws IOException {
+        return findAllPaths(root, filter, DEFAULT_PATH_COMPARATOR);
+    }
+
+    @Override
+    public SortedSet<Path> findAllPaths(Path root, PathFilter filter, Comparator<? super Path> comparator) throws IOException {
         final SortedSet<Path> paths = new TreeSet<>(comparator);
         if (root.equals(sourceRoot)) {
-            addAllPaths(paths, sourcePaths);
+            addAllPaths(paths, sourcePaths, filter);
         } else if (root.equals(staticRoot)) {
-            addAllPaths(paths, staticPaths);
+            addAllPaths(paths, staticPaths, filter);
         } else if (root.equals(targetRoot)) {
-            addAllPaths(paths, targetPaths);
+            addAllPaths(paths, targetPaths, filter);
         }
         return paths;
     }
@@ -104,9 +109,12 @@ public class DummyFileSystem implements FileSystem {
         return entry != null ? entry.getTimestamp() : -1;
     }
 
-    private void addAllPaths(SortedSet<Path> paths, Set<DummyPathEntry> entries) {
+    private void addAllPaths(SortedSet<Path> paths, Set<DummyPathEntry> entries, PathFilter filter) {
         for (DummyPathEntry entry : entries) {
-            paths.add(entry.getPath());
+            final Path path = entry.getPath();
+            if (filter.acceptFile(path)) {
+                paths.add(path);
+            }
         }
     }
 

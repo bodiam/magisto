@@ -41,6 +41,10 @@ public interface FileSystem {
      */
     static final String MAGISTO_EXPORT_MARKER_FILE = ".magisto-export";
 
+    static final Comparator<? super Path> DEFAULT_PATH_COMPARATOR = new DefaultPathComparator();
+
+    static final PathFilter DEFAULT_PATH_FILTER = new DefaultPathFilter();
+
     /**
      * Resolves and checks the source directory.
      * <p>
@@ -116,12 +120,29 @@ public interface FileSystem {
     SortedSet<Path> findAllPaths(Path root) throws IOException;
 
     /**
-     * @param root Directory to find all paths in.
+     * @param root       Directory to find all paths in.
      * @param comparator Comparator to use for path comparisons.
      * @return All paths in a directory, all relative to the directory itself.
      * @throws IOException If an exception occurs while finding all paths.
      */
     SortedSet<Path> findAllPaths(Path root, Comparator<? super Path> comparator) throws IOException;
+
+    /**
+     * @param root   Directory to find all paths in.
+     * @param filter Filter to apply to the paths found.
+     * @return All paths in a directory, all relative to the directory itself.
+     * @throws IOException If an exception occurs while finding all paths.
+     */
+    SortedSet<Path> findAllPaths(Path root, PathFilter filter) throws IOException;
+
+    /**
+     * @param root       Directory to find all paths in.
+     * @param filter     Filter to apply to the paths found.
+     * @param comparator Comparator to use for path comparisons.
+     * @return All paths in a directory, all relative to the directory itself.
+     * @throws IOException If an exception occurs while finding all paths.
+     */
+    SortedSet<Path> findAllPaths(Path root, PathFilter filter, Comparator<? super Path> comparator) throws IOException;
 
     /**
      * @param path Absolute path to get the last modified timestamp of.

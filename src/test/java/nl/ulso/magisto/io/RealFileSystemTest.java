@@ -191,6 +191,66 @@ public class RealFileSystemTest {
     }
 
     @Test
+    public void testFindAllPathsWithDirectoryFilter() throws Exception {
+        runFileSystemTest(new FileSystemTestWithPreparedDirectory() {
+            @Override
+            public void prepareTempDirectory(Path path) throws IOException {
+                Files.createFile(path.resolve("foo"));
+                Files.createDirectory(path.resolve("bar"));
+                Files.createFile(path.resolve("bar").resolve("baz"));
+            }
+
+            @Override
+            public void runTest(Path path) throws IOException {
+                final SortedSet<Path> paths = fileSystem.findAllPaths(path, new PathFilter() {
+                    @Override
+                    public boolean acceptDirectory(Path path) {
+                        return !path.getFileName().toString().equals("bar");
+                    }
+
+                    @Override
+                    public boolean acceptFile(Path path) {
+                        return true;
+                    }
+                });
+                assertEquals(1, paths.size());
+                assertArrayEquals(new Path[]{createPath("foo")}, paths.toArray());
+            }
+        });
+    }
+
+    @Test
+    public void testFindAllPathsWithFileFilter() throws Exception {
+        runFileSystemTest(new FileSystemTestWithPreparedDirectory() {
+            @Override
+            public void prepareTempDirectory(Path path) throws IOException {
+                Files.createFile(path.resolve("foo"));
+                Files.createDirectory(path.resolve("bar"));
+                Files.createFile(path.resolve("bar").resolve("baz"));
+            }
+
+            @Override
+            public void runTest(Path path) throws IOException {
+                final SortedSet<Path> paths = fileSystem.findAllPaths(path, new PathFilter() {
+                    @Override
+                    public boolean acceptDirectory(Path path) {
+                        return true;
+                    }
+
+                    @Override
+                    public boolean acceptFile(Path path) {
+                        return path.getFileName().toString().equals("foo");
+                    }
+                });
+                assertEquals(2, paths.size());
+                assertArrayEquals(new Path[]{
+                        createPath("bar"),
+                        createPath("foo")}, paths.toArray());
+            }
+        });
+    }
+
+    @Test
     public void testSourceAndTargetDoNotOverlap() throws Exception {
         final Path source = WORKING_DIRECTORY.resolve("foo");
         final Path target = WORKING_DIRECTORY.resolve("bar");

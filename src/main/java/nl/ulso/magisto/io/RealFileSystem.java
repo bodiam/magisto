@@ -38,12 +38,6 @@ import static nl.ulso.magisto.io.Paths.*;
 public class RealFileSystem implements FileSystem {
 
     private static final Charset CHARSET_UTF8 = Charset.forName("UTF-8");
-    private static final Comparator<? super Path> DEFAULT_PATH_COMPARATOR = new Comparator<Path>() {
-        @Override
-        public int compare(Path path1, Path path2) {
-            return path1.compareTo(path2);
-        }
-    };
 
     @Override
     public Path resolveSourceDirectory(String directoryName) throws IOException {
@@ -122,16 +116,30 @@ public class RealFileSystem implements FileSystem {
 
     @Override
     public SortedSet<Path> findAllPaths(Path root) throws IOException {
-        return findAllPaths(root, DEFAULT_PATH_COMPARATOR);
+        return findAllPaths(root, DEFAULT_PATH_FILTER, DEFAULT_PATH_COMPARATOR);
     }
 
     @Override
     public SortedSet<Path> findAllPaths(final Path root, Comparator<? super Path> comparator) throws IOException {
+        return findAllPaths(root, DEFAULT_PATH_FILTER, comparator);
+    }
+
+    @Override
+    public SortedSet<Path> findAllPaths(Path root, PathFilter filter) throws IOException {
+        return findAllPaths(root, filter, DEFAULT_PATH_COMPARATOR);
+    }
+
+    @Override
+    public SortedSet<Path> findAllPaths(final Path root, final PathFilter filter, Comparator<? super Path> comparator)
+            throws IOException {
         final SortedSet<Path> paths = new TreeSet<>(comparator);
         Files.walkFileTree(requireAbsolutePath(root), new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult preVisitDirectory(Path path, BasicFileAttributes attributes) throws IOException {
                 if (root != path && Files.isHidden(path)) {
+                    return FileVisitResult.SKIP_SUBTREE;
+                }
+                if (!filter.acceptDirectory(path)) {
                     return FileVisitResult.SKIP_SUBTREE;
                 }
                 if (root != path) {
@@ -142,7 +150,7 @@ public class RealFileSystem implements FileSystem {
 
             @Override
             public FileVisitResult visitFile(Path path, BasicFileAttributes attributes) throws IOException {
-                if (!Files.isHidden(path)) {
+                if (!Files.isHidden(path) && filter.acceptFile(path)) {
                     paths.add(root.relativize(path));
                 }
                 return FileVisitResult.CONTINUE;
