@@ -65,8 +65,6 @@ class Magisto {
             statistics.begin();
             final Path sourceRoot = fileSystem.resolveSourceDirectory(sourceDirectory);
             final Path targetRoot = fileSystem.prepareTargetDirectory(targetDirectory);
-            fileSystem.requireDistinct(sourceRoot, targetRoot);
-
             final MagistoFactory magistoFactory = magistoFactoryBuilder
                     .withSourceRoot(sourceRoot)
                     .withTargetRoot(targetRoot)

@@ -54,7 +54,7 @@ public class DummyFileSystem implements FileSystem {
     }
 
     @Override
-    public void requireDistinct(Path sourceRoot, Path targetRoot) throws IOException {
+    public void requireDistinct(Path sourceRoot, Path targetRoot) {
     }
 
     @Override

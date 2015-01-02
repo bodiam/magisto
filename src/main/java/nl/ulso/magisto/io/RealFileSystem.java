@@ -85,14 +85,14 @@ public class RealFileSystem implements FileSystem {
     }
 
     @Override
-    public void requireDistinct(Path sourceRoot, Path targetRoot) throws IOException {
+    public void requireDistinct(Path sourceRoot, Path targetRoot) {
         requireAbsolutePath(sourceRoot);
         requireAbsolutePath(targetRoot);
         if (targetRoot.startsWith(sourceRoot)) {
-            throw new IOException("The target directory may not be inside the source directory");
+            throw new IllegalStateException("The target directory may not be inside the source directory");
         }
         if (sourceRoot.startsWith(targetRoot)) {
-            throw new IOException("The source directory may not be inside the target directory");
+            throw new IllegalStateException("The source directory may not be inside the target directory");
         }
     }
 

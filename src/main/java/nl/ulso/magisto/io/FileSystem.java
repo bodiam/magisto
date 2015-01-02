@@ -94,9 +94,9 @@ public interface FileSystem {
      *
      * @param sourceRoot Source directory, must be a real path
      * @param targetRoot Target directory, must be a real path
-     * @throws IOException If the directories overlap.
+     * @throws java.lang.IllegalStateException If the directories overlap.
      */
-    void requireDistinct(Path sourceRoot, Path targetRoot) throws IOException;
+    void requireDistinct(Path sourceRoot, Path targetRoot);
 
     /**
      * Writes the {@value #MAGISTO_EXPORT_MARKER_FILE} to the directory.

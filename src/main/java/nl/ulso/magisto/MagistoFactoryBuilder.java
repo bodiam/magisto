@@ -39,5 +39,9 @@ public interface MagistoFactoryBuilder {
 
     MagistoFactoryBuilder withTargetRoot(Path targetRoot);
 
+    /**
+     * @return A factory for components that run with the provides source and target roots.
+     * @throws java.lang.IllegalStateException If the source and target roots overlap.
+     */
     MagistoFactory build();
 }

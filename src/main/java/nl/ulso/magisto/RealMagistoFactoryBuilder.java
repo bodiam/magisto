@@ -57,6 +57,7 @@ class RealMagistoFactoryBuilder implements MagistoFactoryBuilder {
     public MagistoFactory build() {
         requireNonNull(sourceRoot);
         requireNonNull(targetRoot);
+        filesystem.requireDistinct(sourceRoot, targetRoot);
         return new RealMagistoFactory(filesystem, gitClient, sourceRoot, targetRoot);
     }
 }

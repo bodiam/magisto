@@ -260,14 +260,14 @@ public class RealFileSystemTest {
         fileSystem.requireDistinct(source, target);
     }
 
-    @Test(expected = IOException.class)
+    @Test(expected = IllegalStateException.class)
     public void testSourceInsideTarget() throws Exception {
         final Path source = WORKING_DIRECTORY.resolve("bar").resolve("foo");
         final Path target = WORKING_DIRECTORY.resolve("bar");
         fileSystem.requireDistinct(source, target);
     }
 
-    @Test(expected = IOException.class)
+    @Test(expected = IllegalStateException.class)
     public void testTargetInsideSource() throws Exception {
         final Path source = WORKING_DIRECTORY.resolve("foo");
         final Path target = WORKING_DIRECTORY.resolve("foo").resolve("bar");
