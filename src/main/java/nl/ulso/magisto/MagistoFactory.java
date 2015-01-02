@@ -19,6 +19,7 @@ package nl.ulso.magisto;
 import nl.ulso.magisto.action.ActionFactory;
 import nl.ulso.magisto.converter.DocumentConverter;
 import nl.ulso.magisto.loader.DocumentLoader;
+import nl.ulso.magisto.sitemap.Sitemap;
 
 import java.nio.file.Path;
 
@@ -58,4 +59,9 @@ public interface MagistoFactory {
      * @return A factory for actions that operate on files in the the source and/or target roots.
      */
     ActionFactory createActionFactory();
+
+    /**
+     * @return A sitemap from the files in the target path.
+     */
+    Sitemap createSitemap();
 }

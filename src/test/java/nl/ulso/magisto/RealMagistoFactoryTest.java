@@ -48,4 +48,9 @@ public class RealMagistoFactoryTest {
     public void testCreateActionFactory() throws Exception {
         assertNotNull(factory.createActionFactory());
     }
+
+    @Test
+    public void testCreateSitemap() throws Exception {
+        assertNotNull(factory.createSitemap());
+    }
 }

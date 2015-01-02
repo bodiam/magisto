@@ -20,20 +20,25 @@ import nl.ulso.magisto.action.ActionFactory;
 import nl.ulso.magisto.action.DummyActionFactory;
 import nl.ulso.magisto.converter.DocumentConverter;
 import nl.ulso.magisto.converter.DummyDocumentConverter;
+import nl.ulso.magisto.io.FileSystem;
 import nl.ulso.magisto.loader.DocumentLoader;
 import nl.ulso.magisto.loader.DummyDocumentLoader;
+import nl.ulso.magisto.sitemap.Sitemap;
 
+import java.io.IOException;
 import java.nio.file.Path;
 
 public class DummyMagistoFactory implements MagistoFactory {
 
+    private final FileSystem fileSystem;
     private final Path sourceRoot;
     private final Path targetRoot;
     private final DummyActionFactory actionFactory;
     private boolean isCustomTemplateChanged;
 
-    public DummyMagistoFactory(Path sourceRoot, Path targetRoot, DummyActionFactory actionFactory,
+    public DummyMagistoFactory(FileSystem fileSystem, Path sourceRoot, Path targetRoot, DummyActionFactory actionFactory,
                                boolean isCustomTemplateChanged) {
+        this.fileSystem = fileSystem;
         this.sourceRoot = sourceRoot;
         this.targetRoot = targetRoot;
         this.actionFactory = actionFactory;
@@ -68,5 +73,14 @@ public class DummyMagistoFactory implements MagistoFactory {
     @Override
     public ActionFactory createActionFactory() {
         return actionFactory;
+    }
+
+    @Override
+    public Sitemap createSitemap() {
+        try {
+            return Sitemap.load(fileSystem, targetRoot);
+        } catch (IOException e) {
+            return Sitemap.emptySitemap();
+        }
     }
 }

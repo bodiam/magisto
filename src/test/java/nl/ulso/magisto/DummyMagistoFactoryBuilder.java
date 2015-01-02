@@ -54,7 +54,7 @@ public class DummyMagistoFactoryBuilder implements MagistoFactoryBuilder {
 
     @Override
     public MagistoFactory build() {
-        return new DummyMagistoFactory(sourceRoot, targetRoot, actionFactory, isCustomTemplateChanged);
+        return new DummyMagistoFactory(fileSystem, sourceRoot, targetRoot, actionFactory, isCustomTemplateChanged);
     }
 
     public DummyActionFactory getDummyActionFactory() {

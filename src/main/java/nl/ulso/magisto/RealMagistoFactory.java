@@ -24,14 +24,19 @@ import nl.ulso.magisto.git.GitClient;
 import nl.ulso.magisto.io.FileSystem;
 import nl.ulso.magisto.loader.DocumentLoader;
 import nl.ulso.magisto.loader.markdown.MarkdownDocumentLoader;
+import nl.ulso.magisto.sitemap.Sitemap;
 
+import java.io.IOException;
 import java.nio.file.Path;
+
+import static nl.ulso.magisto.sitemap.Sitemap.emptySitemap;
 
 /**
  * Factory implementation that caches its creations. It's purely single threaded!
  */
 class RealMagistoFactory implements MagistoFactory {
 
+    private final FileSystem fileSystem;
     private final Path sourceRoot;
     private final Path targetRoot;
     private final Path staticRoot;
@@ -40,6 +45,7 @@ class RealMagistoFactory implements MagistoFactory {
     private final ActionFactory actionFactory;
 
     RealMagistoFactory(FileSystem filesystem, GitClient gitClient, Path sourceRoot, Path targetRoot) {
+        this.fileSystem = filesystem;
         this.sourceRoot = sourceRoot;
         this.staticRoot = sourceRoot.resolve(STATIC_CONTENT_DIRECTORY);
         this.targetRoot = targetRoot;
@@ -76,5 +82,14 @@ class RealMagistoFactory implements MagistoFactory {
     @Override
     public ActionFactory createActionFactory() {
         return actionFactory;
+    }
+
+    @Override
+    public Sitemap createSitemap() {
+        try {
+            return Sitemap.load(fileSystem, targetRoot);
+        } catch (IOException e) {
+            return emptySitemap();
+        }
     }
 }

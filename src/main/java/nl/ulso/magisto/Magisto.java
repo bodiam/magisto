@@ -70,7 +70,7 @@ class Magisto {
                     .withTargetRoot(targetRoot)
                     .build();
 
-            final Sitemap currentSitemap = loadCurrentSitemap(targetRoot);
+            final Sitemap currentSitemap = loadCurrentSitemap(magistoFactory);
 
             final ActionSet actions = new ActionSet(magistoFactory.createActionFactory());
             addSourceActions(actions, magistoFactory, forceCopy || currentSitemap.isEmpty());
@@ -94,15 +94,11 @@ class Magisto {
         return statistics;
     }
 
-    private Sitemap loadCurrentSitemap(Path targetRoot) {
+    private Sitemap loadCurrentSitemap(MagistoFactory factory) {
         if (forceCopy) {
             return emptySitemap();
         }
-        try {
-            return Sitemap.load(fileSystem, targetRoot);
-        } catch (IOException e) {
-            return emptySitemap();
-        }
+        return factory.createSitemap();
     }
 
     /*
