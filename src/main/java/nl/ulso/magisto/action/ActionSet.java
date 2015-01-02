@@ -16,9 +16,6 @@
 
 package nl.ulso.magisto.action;
 
-import nl.ulso.magisto.sitemap.Change;
-import nl.ulso.magisto.sitemap.ChangeType;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
@@ -32,7 +29,7 @@ import java.util.*;
  * <ol>
  * <li>Add actions to it, by calling the various {@code add...} methods.</li>
  * <li>Perform all actions in the set, by calling the {@link #performAll(ActionCallback)} method.</li>
- * <li>Compute list of {@link nl.ulso.magisto.sitemap.Change}s from it, to update the sitemap from.</li>
+ * <li>Compute list of {@link Change}s from it, to update the sitemap from.</li>
  * </ol>
  * <p>
  * Once all actions are performed, the internal set of actions is depleted.

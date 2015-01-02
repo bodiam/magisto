@@ -14,7 +14,7 @@
  * limitations under the License
  */
 
-package nl.ulso.magisto.sitemap;
+package nl.ulso.magisto.action;
 
 public enum ChangeType {
     INSERT_OR_UPDATE,
