@@ -21,8 +21,6 @@ import nl.ulso.magisto.io.DummyPathEntry;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.nio.file.Path;
-
 import static nl.ulso.magisto.io.DummyPathEntry.createPathEntry;
 import static nl.ulso.magisto.io.Paths.createPath;
 import static org.junit.Assert.assertEquals;
@@ -30,35 +28,28 @@ import static org.junit.Assert.assertEquals;
 public class CopyStaticActionTest {
 
     private DummyFileSystem fileSystem;
-    private Path sourceRoot;
-    private Path targetRoot;
 
     @Before
     public void setUp() throws Exception {
         fileSystem = new DummyFileSystem();
-        sourceRoot = fileSystem.resolveSourceDirectory("source");
-        targetRoot = fileSystem.prepareTargetDirectory("target");
     }
 
     @Test
     public void testActionType() throws Exception {
         assertEquals(ActionType.COPY_STATIC, new CopyStaticAction(
-                fileSystem, sourceRoot, targetRoot, createPath("copy")).getActionType());
+                fileSystem, fileSystem.getSourceRoot(), fileSystem.getTargetRoot(), createPath("copy")).getActionType());
     }
 
     @Test
     public void testActionCategory() throws Exception {
         assertEquals(ActionCategory.STATIC, new CopyStaticAction(
-                fileSystem, sourceRoot, targetRoot, createPath("copy")).getActionCategory());
+                fileSystem, fileSystem.getSourceRoot(), fileSystem.getTargetRoot(), createPath("copy")).getActionCategory());
     }
 
     @Test
     public void testCopyStatic() throws Exception {
-        final DummyFileSystem fileSystem = new DummyFileSystem();
-        final Path sourceRoot = fileSystem.resolveSourceDirectory("source");
-        final Path targetRoot = fileSystem.prepareTargetDirectory("target");
         final DummyPathEntry entry = createPathEntry("file");
-        new CopyStaticAction(fileSystem, sourceRoot.resolve(".static"), targetRoot, entry.getPath()).perform();
+        new CopyStaticAction(fileSystem, fileSystem.getSourceRoot().resolve(".static"), fileSystem.getTargetRoot(), entry.getPath()).perform();
         assertEquals(".static:file -> target", fileSystem.getLoggedCopies());
     }
 }

@@ -18,9 +18,8 @@ package nl.ulso.magisto.action;
 
 import nl.ulso.magisto.io.DummyFileSystem;
 import nl.ulso.magisto.io.DummyPathEntry;
+import org.junit.Before;
 import org.junit.Test;
-
-import java.nio.file.Path;
 
 import static nl.ulso.magisto.io.DummyPathEntry.createPathEntry;
 import static nl.ulso.magisto.io.Paths.createPath;
@@ -28,31 +27,29 @@ import static org.junit.Assert.assertEquals;
 
 public class CopySourceActionTest {
 
+    private DummyFileSystem fileSystem;
+
+    @Before
+    public void setUp() throws Exception {
+        fileSystem = new DummyFileSystem();
+    }
+
     @Test
     public void testActionType() throws Exception {
-        final DummyFileSystem fileSystem = new DummyFileSystem();
-        final Path sourceRoot = fileSystem.resolveSourceDirectory("source");
-        final Path targetRoot = fileSystem.prepareTargetDirectory("target");
         assertEquals(ActionType.COPY_SOURCE, new CopySourceAction(
-                fileSystem, sourceRoot, targetRoot, createPath("copy")).getActionType());
+                fileSystem, fileSystem.getSourceRoot(), fileSystem.getTargetRoot(), createPath("copy")).getActionType());
     }
 
     @Test
     public void testActionCategory() throws Exception {
-        final DummyFileSystem fileSystem = new DummyFileSystem();
-        final Path sourceRoot = fileSystem.resolveSourceDirectory("source");
-        final Path targetRoot = fileSystem.prepareTargetDirectory("target");
         assertEquals(ActionCategory.SOURCE, new CopySourceAction(
-                fileSystem, sourceRoot, targetRoot, createPath("copy")).getActionCategory());
+                fileSystem, fileSystem.getSourceRoot(), fileSystem.getTargetRoot(), createPath("copy")).getActionCategory());
     }
 
     @Test
     public void testCopySource() throws Exception {
-        final DummyFileSystem fileSystem = new DummyFileSystem();
-        final Path sourceRoot = fileSystem.resolveSourceDirectory("source");
-        final Path targetRoot = fileSystem.prepareTargetDirectory("target");
         final DummyPathEntry entry = createPathEntry("file");
-        new CopySourceAction(fileSystem, sourceRoot, targetRoot, entry.getPath()).perform();
+        new CopySourceAction(fileSystem, fileSystem.getSourceRoot(), fileSystem.getTargetRoot(), entry.getPath()).perform();
         assertEquals("source:file -> target", fileSystem.getLoggedCopies());
     }
 }

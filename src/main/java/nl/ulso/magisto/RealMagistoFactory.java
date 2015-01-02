@@ -85,6 +85,11 @@ class RealMagistoFactory implements MagistoFactory {
     }
 
     @Override
+    public TouchFile createTouchFile() {
+        return new TouchFile(fileSystem, targetRoot);
+    }
+
+    @Override
     public Sitemap createSitemap() {
         try {
             return Sitemap.load(fileSystem, targetRoot);

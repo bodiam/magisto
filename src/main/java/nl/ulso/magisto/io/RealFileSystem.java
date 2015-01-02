@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -30,7 +29,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.nio.file.StandardOpenOption.*;
-import static nl.ulso.magisto.io.Paths.*;
+import static nl.ulso.magisto.io.Paths.requireAbsolutePath;
+import static nl.ulso.magisto.io.Paths.requireRelativePath;
 
 /**
  * Default implementation of the {@link FileSystem} that actually accesses the file system.
@@ -38,81 +38,6 @@ import static nl.ulso.magisto.io.Paths.*;
 public class RealFileSystem implements FileSystem {
 
     private static final Charset CHARSET_UTF8 = Charset.forName("UTF-8");
-
-    @Override
-    public Path resolveSourceDirectory(String directoryName) throws IOException {
-        final Path path = createPath(directoryName);
-        if (Files.notExists(path)) {
-            throw new NoSuchFileException(path.toString());
-        }
-        if (!Files.isDirectory(path)) {
-            throw new IOException("Not a directory: " + path);
-        }
-        if (!Files.isReadable(path)) {
-            throw new IOException("Directory not readable: " + path);
-        }
-        return path.toRealPath();
-    }
-
-    @Override
-    public Path prepareTargetDirectory(String directoryName) throws IOException {
-        final Path path = createPath(directoryName);
-        if (Files.notExists(path)) {
-            return Files.createDirectories(path);
-        }
-        if (!Files.isDirectory(path)) {
-            throw new IOException("Not a directory: " + path);
-        }
-        if (!Files.isWritable(path)) {
-            throw new IOException("Directory not writable: " + path);
-        }
-        final TargetStatus status = new TargetStatus();
-        Files.walkFileTree(path, Collections.<FileVisitOption>emptySet(), 1, new SimpleFileVisitor<Path>() {
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attributes) throws IOException {
-                if (MAGISTO_EXPORT_MARKER_FILE.equals(file.getFileName().toString())) {
-                    status.isExport = true;
-                    return FileVisitResult.TERMINATE;
-                }
-                status.hasFiles = true;
-                return FileVisitResult.CONTINUE;
-            }
-        });
-        if (status.hasFiles && !status.isExport) {
-            throw new IOException("Directory not empty and not an export: " + path);
-        }
-        return path.toRealPath();
-    }
-
-    @Override
-    public void requireDistinct(Path sourceRoot, Path targetRoot) {
-        requireAbsolutePath(sourceRoot);
-        requireAbsolutePath(targetRoot);
-        if (targetRoot.startsWith(sourceRoot)) {
-            throw new IllegalStateException("The target directory may not be inside the source directory");
-        }
-        if (sourceRoot.startsWith(targetRoot)) {
-            throw new IllegalStateException("The source directory may not be inside the target directory");
-        }
-    }
-
-    @Override
-    public void writeTouchFile(Path targetRoot) throws IOException {
-        final Path touchFile = requireAbsolutePath(targetRoot).resolve(MAGISTO_EXPORT_MARKER_FILE);
-        if (Files.exists(touchFile)) {
-            Files.delete(touchFile);
-        }
-        Files.createFile(touchFile);
-    }
-
-    @Override
-    public long getTouchFileLastModifiedInMillis(Path targetRoot) throws IOException {
-        final Path touchFile = requireAbsolutePath(targetRoot).resolve(MAGISTO_EXPORT_MARKER_FILE);
-        if (Files.notExists(touchFile)) {
-            return -1;
-        }
-        return Files.getLastModifiedTime(touchFile).toMillis();
-    }
 
     @Override
     public SortedSet<Path> findAllPaths(Path root) throws IOException {
@@ -140,7 +65,7 @@ public class RealFileSystem implements FileSystem {
                     return FileVisitResult.SKIP_SUBTREE;
                 }
                 final Path relativePath = root.relativize(path);
-                if (!filter.acceptDirectory(relativePath)) {
+                if (root != path && !filter.acceptDirectory(relativePath)) {
                     return FileVisitResult.SKIP_SUBTREE;
                 }
                 if (root != path) {
@@ -168,6 +93,59 @@ public class RealFileSystem implements FileSystem {
     }
 
     @Override
+    public boolean exists(Path path) {
+        return Files.exists(path);
+    }
+
+    @Override
+    public boolean notExists(Path path) {
+        return Files.notExists(path);
+    }
+
+    @Override
+    public boolean isDirectory(Path path) {
+        return Files.isDirectory(path);
+    }
+
+    @Override
+    public boolean isReadable(Path path) {
+        return Files.isReadable(path);
+    }
+
+    @Override
+    public boolean isWritable(Path path) {
+        return Files.isWritable(path);
+    }
+
+    @Override
+    public boolean isEmpty(Path directory) throws IOException {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
+            // Silly code here, but stream.iterator().hasNext() doesn't seem to work.
+            for (Path path : stream) {
+                return false;
+            }
+            return true;
+        }
+    }
+
+    @Override
+    public Path toRealPath(Path path) throws IOException {
+        requireAbsolutePath(path);
+        return path.toRealPath();
+    }
+
+    @Override
+    public void createFile(Path file) throws IOException {
+        requireAbsolutePath(file);
+        Files.createFile(file);
+    }
+
+    @Override
+    public void createDirectories(Path path) throws IOException {
+        Files.createDirectories(path);
+    }
+
+    @Override
     public void copy(Path sourceRoot, Path targetRoot, Path path) throws IOException {
         requireAbsolutePath(sourceRoot);
         requireAbsolutePath(targetRoot);
@@ -186,11 +164,10 @@ public class RealFileSystem implements FileSystem {
     }
 
     @Override
-    public void delete(Path root, Path path) throws IOException {
-        requireAbsolutePath(root);
-        requireRelativePath(path);
-        Logger.getGlobal().log(Level.FINE, String.format("Deleting '%s' from '%s'.", path, root));
-        Files.delete(root.resolve(path));
+    public void delete(Path path) throws IOException {
+        requireAbsolutePath(path);
+        Logger.getGlobal().log(Level.FINE, String.format("Deleting '%s'.", path));
+        Files.delete(path);
     }
 
     @Override
@@ -201,20 +178,5 @@ public class RealFileSystem implements FileSystem {
     @Override
     public BufferedWriter newBufferedWriterForTextFile(Path path) throws IOException {
         return Files.newBufferedWriter(path, CHARSET_UTF8, CREATE, WRITE, TRUNCATE_EXISTING);
-    }
-
-    @Override
-    public boolean exists(Path path) {
-        return Files.exists(path);
-    }
-
-    @Override
-    public boolean notExists(Path path) {
-        return Files.notExists(path);
-    }
-
-    private static class TargetStatus {
-        boolean isExport = false;
-        boolean hasFiles = false;
     }
 }

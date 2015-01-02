@@ -22,10 +22,10 @@ import freemarker.cache.TemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
-import nl.ulso.magisto.document.Document;
 import nl.ulso.magisto.converter.DocumentConverter;
-import nl.ulso.magisto.loader.DocumentLoader;
+import nl.ulso.magisto.document.Document;
 import nl.ulso.magisto.io.FileSystem;
+import nl.ulso.magisto.loader.DocumentLoader;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static nl.ulso.magisto.TouchFile.createTouchFilePath;
 import static nl.ulso.magisto.io.Paths.splitOnExtension;
 
 /**
@@ -72,7 +73,7 @@ public class FreeMarkerDocumentConverter implements DocumentConverter {
     @Override
     public boolean isCustomTemplateChanged() throws IOException {
         if (isCustomTemplateAvailable()) {
-            final long touchFileTimestamp = fileSystem.getTouchFileLastModifiedInMillis(targetRoot);
+            final long touchFileTimestamp = fileSystem.getLastModifiedInMillis(createTouchFilePath(targetRoot));
             final long customTemplateTimestamp = fileSystem.getLastModifiedInMillis(
                     templateRoot.resolve(CUSTOM_PAGE_TEMPLATE));
             return customTemplateTimestamp > touchFileTimestamp;

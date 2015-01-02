@@ -21,8 +21,6 @@ import nl.ulso.magisto.io.DummyFileSystem;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.nio.file.Path;
-
 import static nl.ulso.magisto.io.Paths.createPath;
 import static org.junit.Assert.assertNotNull;
 
@@ -33,10 +31,9 @@ public class RealActionFactoryTest {
     @Before
     public void setUp() throws Exception {
         final DummyFileSystem fileSystem = new DummyFileSystem();
-        final Path sourceRoot = fileSystem.resolveSourceDirectory("source");
-        final Path targetRoot = fileSystem.prepareTargetDirectory("target");
-        factory = new RealActionFactory(fileSystem, new DummyDocumentConverter(sourceRoot, targetRoot),
-                sourceRoot.resolve(".static"));
+        factory = new RealActionFactory(fileSystem, new DummyDocumentConverter(fileSystem.getSourceRoot(),
+                fileSystem.getTargetRoot()),
+                fileSystem.getStaticRoot());
 
     }
 

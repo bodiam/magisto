@@ -33,9 +33,9 @@ public class DummyFileSystem implements FileSystem {
     private final Set<DummyPathEntry> targetPaths = new HashSet<>();
     private final Map<String, String> textFilesForReading = new HashMap<>();
     private final Map<String, StringWriter> textFilesForWriting = new HashMap<>();
+
     private String loggedCopies = "";
     private String loggedDeletions = "";
-    private long touchFileTimestamp = -1;
 
     public DummyFileSystem() {
         this.sourceRoot = createPath("source").toAbsolutePath();
@@ -43,27 +43,54 @@ public class DummyFileSystem implements FileSystem {
         this.targetRoot = createPath("target").toAbsolutePath();
     }
 
-    @Override
-    public Path resolveSourceDirectory(String directoryName) throws IOException {
+    public Path getSourceRoot() {
         return sourceRoot;
     }
 
-    @Override
-    public Path prepareTargetDirectory(String directoryName) throws IOException {
+    public Path getStaticRoot() {
+        return staticRoot;
+    }
+
+    public Path getTargetRoot() {
         return targetRoot;
     }
 
     @Override
-    public void requireDistinct(Path sourceRoot, Path targetRoot) {
+    public boolean isDirectory(Path path) {
+        return true;
     }
 
     @Override
-    public void writeTouchFile(Path targetRoot) throws IOException {
+    public boolean isReadable(Path path) {
+        return true;
     }
 
     @Override
-    public long getTouchFileLastModifiedInMillis(Path targetRoot) throws IOException {
-        return touchFileTimestamp;
+    public boolean isWritable(Path path) {
+        return true;
+    }
+
+    @Override
+    public boolean isEmpty(Path directory) throws IOException {
+        return true;
+    }
+
+    @Override
+    public void createDirectories(Path path) throws IOException {
+    }
+
+    @Override
+    public void createFile(Path file) throws IOException {
+    }
+
+    @Override
+    public Path toRealPath(Path path) throws IOException {
+        return path;
+    }
+
+    @Override
+    public void delete(Path path) throws IOException {
+        loggedDeletions += String.format("%s (%s)%n", path.getFileName(), path);
     }
 
     @Override
@@ -124,11 +151,6 @@ public class DummyFileSystem implements FileSystem {
     }
 
     @Override
-    public void delete(Path root, Path path) throws IOException {
-        loggedDeletions += String.format("%s:%s%n", root.getFileName(), path);
-    }
-
-    @Override
     public BufferedReader newBufferedReaderForTextFile(Path path) throws IOException {
         final String contents = textFilesForReading.get(path.getFileName().toString());
         if (contents == null) {
@@ -146,6 +168,9 @@ public class DummyFileSystem implements FileSystem {
 
     @Override
     public boolean exists(Path path) {
+        if (path.equals(sourceRoot) || path.equals(targetRoot)) {
+            return true;
+        }
         if (path.equals(staticRoot)) {
             return !staticPaths.isEmpty();
         }
@@ -196,9 +221,5 @@ public class DummyFileSystem implements FileSystem {
 
     public String getTextFileFromBufferedWriter(String fileName) {
         return textFilesForWriting.get(fileName).toString();
-    }
-
-    public void markTouchFile() {
-        touchFileTimestamp = System.currentTimeMillis() - 1000;
     }
 }

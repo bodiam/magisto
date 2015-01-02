@@ -20,15 +20,22 @@ import nl.ulso.magisto.action.DummyActionFactory;
 import nl.ulso.magisto.io.DummyFileSystem;
 import nl.ulso.magisto.io.FileSystem;
 
+import java.io.IOException;
 import java.nio.file.Path;
 
 public class DummyMagistoFactoryBuilder implements MagistoFactoryBuilder {
 
-    private final FileSystem fileSystem = new DummyFileSystem();
-    private Path sourceRoot;
-    private Path targetRoot;
+    private final FileSystem fileSystem;
+    private final Path sourceRoot;
+    private final Path targetRoot;
     private boolean isCustomTemplateChanged = false;
     private DummyActionFactory actionFactory = new DummyActionFactory();
+
+    public DummyMagistoFactoryBuilder() {
+        fileSystem = new DummyFileSystem();
+        sourceRoot = ((DummyFileSystem) fileSystem).getSourceRoot();
+        targetRoot = ((DummyFileSystem) fileSystem).getTargetRoot();
+    }
 
     @Override
     public FileSystem getFileSystem() {
@@ -36,14 +43,12 @@ public class DummyMagistoFactoryBuilder implements MagistoFactoryBuilder {
     }
 
     @Override
-    public MagistoFactoryBuilder withSourceRoot(Path sourceRoot) {
-        this.sourceRoot = sourceRoot;
+    public MagistoFactoryBuilder withSourceDirectory(String sourceDirectory) throws IOException {
         return this;
     }
 
     @Override
-    public MagistoFactoryBuilder withTargetRoot(Path targetRoot) {
-        this.targetRoot = targetRoot;
+    public MagistoFactoryBuilder withTargetDirectory(String targetDirectory) throws IOException {
         return this;
     }
 

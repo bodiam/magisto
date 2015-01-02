@@ -25,7 +25,7 @@ import java.nio.file.Path;
  * </p>
  */
 public interface PathFilter {
-    
+
     boolean acceptDirectory(Path path);
 
     boolean acceptFile(Path path);

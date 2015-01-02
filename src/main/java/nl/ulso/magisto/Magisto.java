@@ -63,11 +63,9 @@ class Magisto {
         final Statistics statistics = new Statistics();
         try {
             statistics.begin();
-            final Path sourceRoot = fileSystem.resolveSourceDirectory(sourceDirectory);
-            final Path targetRoot = fileSystem.prepareTargetDirectory(targetDirectory);
             final MagistoFactory magistoFactory = magistoFactoryBuilder
-                    .withSourceRoot(sourceRoot)
-                    .withTargetRoot(targetRoot)
+                    .withSourceDirectory(sourceDirectory)
+                    .withTargetDirectory(targetDirectory)
                     .build();
 
             final Sitemap currentSitemap = loadCurrentSitemap(magistoFactory);
@@ -86,8 +84,8 @@ class Magisto {
                 }
             });
 
-            updatedSitemap.save(fileSystem, targetRoot);
-            fileSystem.writeTouchFile(targetRoot);
+            updatedSitemap.save(fileSystem, magistoFactory.getTargetRoot());
+            magistoFactory.createTouchFile().update();
         } finally {
             statistics.end();
         }

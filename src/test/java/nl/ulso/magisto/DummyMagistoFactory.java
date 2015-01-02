@@ -20,6 +20,7 @@ import nl.ulso.magisto.action.ActionFactory;
 import nl.ulso.magisto.action.DummyActionFactory;
 import nl.ulso.magisto.converter.DocumentConverter;
 import nl.ulso.magisto.converter.DummyDocumentConverter;
+import nl.ulso.magisto.io.DummyFileSystem;
 import nl.ulso.magisto.io.FileSystem;
 import nl.ulso.magisto.loader.DocumentLoader;
 import nl.ulso.magisto.loader.DummyDocumentLoader;
@@ -27,6 +28,8 @@ import nl.ulso.magisto.sitemap.Sitemap;
 
 import java.io.IOException;
 import java.nio.file.Path;
+
+import static nl.ulso.magisto.io.Paths.createPath;
 
 public class DummyMagistoFactory implements MagistoFactory {
 
@@ -82,5 +85,10 @@ public class DummyMagistoFactory implements MagistoFactory {
         } catch (IOException e) {
             return Sitemap.emptySitemap();
         }
+    }
+
+    @Override
+    public TouchFile createTouchFile() {
+        return new TouchFile(fileSystem, targetRoot);
     }
 }

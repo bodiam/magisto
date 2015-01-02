@@ -36,81 +36,9 @@ import java.util.SortedSet;
  */
 public interface FileSystem {
 
-    /**
-     * Name of the empty file to write after every export.
-     */
-    static final String MAGISTO_EXPORT_MARKER_FILE = ".magisto-export";
-
     static final Comparator<? super Path> DEFAULT_PATH_COMPARATOR = new DefaultPathComparator();
 
     static final PathFilter DEFAULT_PATH_FILTER = new DefaultPathFilter();
-
-    /**
-     * Resolves and checks the source directory.
-     * <p>
-     * If the directory is not according to the rules, this method throws an {@link IOException}. The rules are:
-     * </p>
-     * <ul>
-     * <li>It must exist</li>
-     * <li>It must be a directory</li>
-     * <li>It must be readable</li>
-     * </li>
-     * </ul>
-     * <p>
-     * The path returned is an absolute path.
-     * </p>
-     *
-     * @param directoryName Name of the source directory.
-     * @return Existing, valid, real path to the directory.
-     * @throws IOException if the path couldn't be resolved or if it isn't valid.
-     */
-    Path resolveSourceDirectory(String directoryName) throws IOException;
-
-    /**
-     * Prepares the target directory.
-     * <p>
-     * If the target directory doesn't yet exist, it will be created.
-     * </p>
-     * <p>
-     * If the target does exist, it must be according to these rules:
-     * </p>
-     * <ul>
-     * <li>It must be a directory</li>
-     * <li>It must be writable</li>
-     * <li>It must be empty, or it must have a file called "{@value #MAGISTO_EXPORT_MARKER_FILE}".</li>
-     * </ul>
-     * <p>
-     * The path returned is an absolute path.
-     * </p>
-     *
-     * @param directoryName Name of the target directory.
-     * @return Existing, valid, real path to the directory.
-     * @throws IOException If an exception occurs while accessing the file system.
-     */
-    Path prepareTargetDirectory(String directoryName) throws IOException;
-
-    /**
-     * Ensures that the source and target directories do not overlap
-     *
-     * @param sourceRoot Source directory, must be a real path
-     * @param targetRoot Target directory, must be a real path
-     * @throws java.lang.IllegalStateException If the directories overlap.
-     */
-    void requireDistinct(Path sourceRoot, Path targetRoot);
-
-    /**
-     * Writes the {@value #MAGISTO_EXPORT_MARKER_FILE} to the directory.
-     *
-     * @param targetRoot Directory, must be a real path.
-     */
-    void writeTouchFile(Path targetRoot) throws IOException;
-
-    /**
-     * @param targetRoot Target directory, must be a real path;
-     * @return The last modified timestamp of the touch file, or {@value -1} if the file doesn't exist.
-     * @throws IOException If an exception occurred with accessing the touch file.
-     */
-    long getTouchFileLastModifiedInMillis(Path targetRoot) throws IOException;
 
     /**
      * @param root Directory to find all paths in.
@@ -151,6 +79,63 @@ public interface FileSystem {
     long getLastModifiedInMillis(Path path) throws IOException;
 
     /**
+     * @param path Absolute path to check for existence.
+     * @return {@code true} if the file exists, {@code false} if it doesn't.
+     */
+    boolean exists(Path path);
+
+    /**
+     * @param path Absolute path to check for existence.
+     * @return {@code true} if the file does not exist, {@code false} if it does.
+     */
+    boolean notExists(Path path);
+
+    /**
+     * @param path Absolute path to check if it is a directory.
+     * @return {@code true} if the path points to a directory, {@code false} otherwise.
+     */
+    boolean isDirectory(Path path);
+
+    /**
+     * @param path Absolute path to check for readability.
+     * @return {@code true} if the path is readable, {@code false} otherwise.
+     */
+    boolean isReadable(Path path);
+
+    /**
+     * @param path Absolute path to check for writeability.
+     * @return {@code true} if the path is writable, {@code false} otherwise.
+     */
+    boolean isWritable(Path path);
+
+    /**
+     * @param directory Absolute path to a directory to check for emptiness.
+     * @return {@code true} if the directory is empty; {@code false} otherwise.
+     * @throws IOException If the directory couldn't be read.
+     */
+    boolean isEmpty(Path directory) throws IOException;
+
+    /**
+     * @param path Abssolute path to convert to a real path. Use this method instead {@link
+     *             java.nio.file.Path#toRealPath} for better testability.
+     * @return The real path of the path.
+     * @throws IOException If the conversion couldn't be performed.
+     */
+    Path toRealPath(Path path) throws IOException;
+
+    /**
+     * @param file Absolute path to the file to create.
+     * @throws IOException If the file couldn't be created.
+     */
+    void createFile(Path file) throws IOException;
+
+    /**
+     * @param path Absolute path representing the directory to create, including any missing superdirectories.
+     * @throws IOException If any of the required directories couldn't be created.
+     */
+    void createDirectories(Path path) throws IOException;
+
+    /**
      * Copies {@code path} in {@code sourceRoot} to {@code targetRoot}, overwriting the same path in the target
      * directory if it already exists.
      *
@@ -161,12 +146,9 @@ public interface FileSystem {
     void copy(Path sourceRoot, Path targetRoot, Path path) throws IOException;
 
     /**
-     * Deletes a path from the root.
-     *
-     * @param root Absolute path to the directory.
-     * @param path Relative path to the file or directory to deleteTarget within the root directory.
+     * @param path Absolute path to the file or directory to delete.
      */
-    void delete(Path root, Path path) throws IOException;
+    void delete(Path path) throws IOException;
 
     /**
      * @return A new reader for a text file in UTF-8.
@@ -179,16 +161,4 @@ public interface FileSystem {
      * @throws IOException If an exception accessing occurs while accessing the file system.
      */
     BufferedWriter newBufferedWriterForTextFile(Path path) throws IOException;
-
-    /**
-     * @param path Absolute path to check for existence.
-     * @return {@code true} if the file exists, {@code false} if it doesn't.
-     */
-    boolean exists(Path path);
-
-    /**
-     * @param path Absolute path to check for existence.
-     * @return {@code true} if the file does not exist, {@code false} if it does.
-     */
-    boolean notExists(Path path);
 }

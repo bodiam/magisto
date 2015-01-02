@@ -61,6 +61,11 @@ public interface MagistoFactory {
     ActionFactory createActionFactory();
 
     /**
+     * Creates or updates the touch file in the target root.
+     */
+    TouchFile createTouchFile();
+
+    /**
      * @return A sitemap from the files in the target path.
      */
     Sitemap createSitemap();

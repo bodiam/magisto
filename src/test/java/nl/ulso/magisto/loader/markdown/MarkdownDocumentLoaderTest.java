@@ -34,7 +34,7 @@ public class MarkdownDocumentLoaderTest {
     public void setUp() throws Exception {
         fileSystem = new DummyFileSystem();
         final DummyGitClient gitClient = new DummyGitClient();
-        loader = new MarkdownDocumentLoader(fileSystem, fileSystem.resolveSourceDirectory("source"), gitClient);
+        loader = new MarkdownDocumentLoader(fileSystem, fileSystem.getSourceRoot(), gitClient);
     }
 
     @Test

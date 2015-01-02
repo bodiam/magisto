@@ -45,7 +45,7 @@ public class SitemapTest {
         pages.add(new Page(createPath("dir2", "file2"), "Test 2"));
         final Sitemap sitemap = new Sitemap(pages);
         DummyFileSystem fileSystem = new DummyFileSystem();
-        sitemap.save(fileSystem, fileSystem.prepareTargetDirectory(""));
+        sitemap.save(fileSystem, fileSystem.getTargetRoot());
         final String text = fileSystem.getTextFileFromBufferedWriter(".magisto-sitemap");
         final JSONObject object = (JSONObject) new JSONParser().parse(text);
         final Long version = (Long) object.get("version");
@@ -58,7 +58,7 @@ public class SitemapTest {
     public void testRead() throws Exception {
         DummyFileSystem fileSystem = new DummyFileSystem();
         fileSystem.registerTextFileForBufferedReader(".magisto-sitemap", SITEMAP_JSON);
-        final Sitemap sitemap = Sitemap.load(fileSystem, fileSystem.prepareTargetDirectory(""));
+        final Sitemap sitemap = Sitemap.load(fileSystem, fileSystem.getTargetRoot());
         assertEquals(2, sitemap.getPages().size());
         final Page page1 = sitemap.getPages().iterator().next();
         assertEquals("Test 1", page1.getTitle());
@@ -70,6 +70,6 @@ public class SitemapTest {
         DummyFileSystem fileSystem = new DummyFileSystem();
         final String incompatibleSitemap = SITEMAP_JSON.replace("1}", "2}");
         fileSystem.registerTextFileForBufferedReader(".magisto-sitemap", incompatibleSitemap);
-        Sitemap.load(fileSystem, fileSystem.prepareTargetDirectory(""));
+        Sitemap.load(fileSystem, fileSystem.getTargetRoot());
     }
 }

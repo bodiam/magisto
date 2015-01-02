@@ -17,12 +17,9 @@
 package nl.ulso.magisto.action;
 
 import nl.ulso.magisto.converter.DummyDocumentConverter;
-import nl.ulso.magisto.io.DummyFileSystem;
 import nl.ulso.magisto.io.DummyPathEntry;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.nio.file.Path;
 
 import static nl.ulso.magisto.io.DummyPathEntry.createPathEntry;
 import static nl.ulso.magisto.io.Paths.createPath;
@@ -31,15 +28,10 @@ import static org.junit.Assert.assertEquals;
 public class ConvertSourceActionTest {
 
     private DummyDocumentConverter fileConverter;
-    private Path sourceRoot;
-    private Path targetRoot;
 
     @Before
     public void setUp() throws Exception {
-        final DummyFileSystem fileSystem = new DummyFileSystem();
-        sourceRoot = fileSystem.resolveSourceDirectory("source");
-        targetRoot = fileSystem.prepareTargetDirectory("target");
-        fileConverter = new DummyDocumentConverter(sourceRoot, targetRoot, false);
+        fileConverter = new DummyDocumentConverter(createPath("source"), createPath("target"), false);
     }
 
     @Test

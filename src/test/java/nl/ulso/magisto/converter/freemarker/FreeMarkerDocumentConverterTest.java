@@ -17,10 +17,10 @@
 package nl.ulso.magisto.converter.freemarker;
 
 import freemarker.template.Template;
-import nl.ulso.magisto.loader.DummyDocumentLoader;
 import nl.ulso.magisto.document.DummyHistory;
-import nl.ulso.magisto.loader.markdown.MarkdownDocument;
 import nl.ulso.magisto.io.DummyFileSystem;
+import nl.ulso.magisto.loader.DummyDocumentLoader;
+import nl.ulso.magisto.loader.markdown.MarkdownDocument;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static nl.ulso.magisto.io.DummyPathEntry.createPathEntry;
 import static nl.ulso.magisto.io.Paths.createPath;
 import static org.junit.Assert.*;
@@ -37,15 +38,12 @@ public class FreeMarkerDocumentConverterTest {
 
     private FreeMarkerDocumentConverter fileConverter;
     private DummyFileSystem fileSystem;
-    private Path sourceRoot;
-    private Path targetRoot;
 
     @Before
     public void setUp() throws Exception {
         this.fileSystem = new DummyFileSystem();
-        this.sourceRoot = fileSystem.resolveSourceDirectory("source");
-        this.targetRoot = fileSystem.prepareTargetDirectory("target");
-        this.fileConverter = new FreeMarkerDocumentConverter(fileSystem, new DummyDocumentLoader(sourceRoot), targetRoot);
+        this.fileConverter = new FreeMarkerDocumentConverter(fileSystem, new DummyDocumentLoader(
+                fileSystem.getSourceRoot()), fileSystem.getTargetRoot());
     }
 
     @Test
@@ -100,7 +98,8 @@ public class FreeMarkerDocumentConverterTest {
         fileSystem.addSourcePaths(createPathEntry(".page.ftl"));
         fileSystem.registerTextFileForBufferedReader(".page.ftl", "<@link path=\"/static/favicon.ico\"/>");
         fileSystem.registerTextFileForBufferedReader("test.md", String.format("# Title%n%nParagraph"));
-        this.fileConverter = new FreeMarkerDocumentConverter(fileSystem, new DummyDocumentLoader(sourceRoot), targetRoot);
+        this.fileConverter = new FreeMarkerDocumentConverter(fileSystem,
+                new DummyDocumentLoader(fileSystem.getSourceRoot()), fileSystem.getTargetRoot());
         fileConverter.convert(createPath("dir", "test.md"));
         final String output = fileSystem.getTextFileFromBufferedWriter("test.html");
         assertEquals("../static/favicon.ico", output);
@@ -114,8 +113,9 @@ public class FreeMarkerDocumentConverterTest {
 
     @Test
     public void testCustomTemplateHasChanged() throws Exception {
-        fileSystem.markTouchFile();
-        fileSystem.addSourcePaths(createPathEntry(sourceRoot.resolve(".page.ftl")));
+        fileSystem.addTargetPaths(createPathEntry(".magisto-export"));
+        MILLISECONDS.sleep(50);
+        fileSystem.addSourcePaths(createPathEntry(fileSystem.getSourceRoot().resolve(".page.ftl")));
         fileSystem.registerTextFileForBufferedReader(".page.ftl", "CUSTOM TEMPLATE");
         assertTrue(fileConverter.isCustomTemplateChanged());
     }

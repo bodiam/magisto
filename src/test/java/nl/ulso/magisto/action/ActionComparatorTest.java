@@ -37,8 +37,8 @@ public class ActionComparatorTest {
     public void setUp() throws Exception {
         comparator = new ActionComparator();
         fileSystem = new DummyFileSystem();
-        sourceRoot = fileSystem.resolveSourceDirectory("source");
-        targetRoot = fileSystem.prepareTargetDirectory("target");
+        sourceRoot = fileSystem.getSourceRoot();
+        targetRoot = fileSystem.getTargetRoot();
     }
 
     @Test

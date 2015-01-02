@@ -23,10 +23,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.nio.file.attribute.PosixFilePermission;
-import java.util.Collections;
 import java.util.List;
 import java.util.SortedSet;
 
@@ -39,135 +36,6 @@ import static org.junit.Assert.*;
 public class RealFileSystemTest {
 
     private final FileSystem fileSystem = new RealFileSystem();
-
-    @Test
-    public void testSourceDirectoryWithJavaCurrentWorkingDirectory() throws Exception {
-        final Path expected = WORKING_DIRECTORY;
-        final Path actual = fileSystem.resolveSourceDirectory(System.getProperty("user.dir"));
-        assertEquals(expected, actual);
-    }
-
-    @Test(expected = NoSuchFileException.class)
-    public void testSourceDirectoryExceptionForNonExistingDirectory() throws Exception {
-        fileSystem.resolveSourceDirectory("foo");
-    }
-
-    @Test
-    public void testResolvedSourceDirectoryIsRealPath() throws Exception {
-        final Path expected = WORKING_DIRECTORY.resolve("src");
-        final Path actual = fileSystem.resolveSourceDirectory("src");
-        assertEquals(expected.toString(), actual.toString());
-    }
-
-    @Test(expected = IOException.class)
-    public void testSourceDirectoryIsDirectory() throws Exception {
-        fileSystem.resolveSourceDirectory("pom.xml");
-    }
-
-    @Test(expected = IOException.class)
-    public void testSourceDirectoryIsReadable() throws Exception {
-        runFileSystemTest(new FileSystemTestWithPreparedDirectory() {
-            @Override
-            public void prepareTempDirectory(Path path) throws IOException {
-                // Make the directory unreadable
-                Files.setPosixFilePermissions(path, Collections.<PosixFilePermission>emptySet());
-            }
-
-            @Override
-            public void runTest(Path path) throws IOException {
-                // IOException expected, since directory is not readable
-                fileSystem.resolveSourceDirectory(path.toString());
-            }
-        });
-    }
-
-    @Test
-    public void testTargetDirectoryWithNonExistingDirectoryIsRealPath() throws Exception {
-        runFileSystemTest(new FileSystemTestWithoutTempDirectory() {
-            @Override
-            public void runTest(Path path) throws IOException {
-                final Path actual = fileSystem.prepareTargetDirectory(path.toString());
-                assertEquals(path.toString(), actual.toString());
-            }
-        });
-    }
-
-    @Test
-    public void testTargetDirectoryWithExistingDirectoryIsRealPath() throws Exception {
-        runFileSystemTest(new FileSystemTestWithEmptyTempDirectory() {
-            @Override
-            public void runTest(Path path) throws IOException {
-                final Path actual = fileSystem.prepareTargetDirectory(path.toString());
-                assertEquals(path.toString(), actual.toString());
-            }
-        });
-    }
-
-    @Test(expected = IOException.class)
-    public void testTargetDirectoryIsDirectory() throws Exception {
-        fileSystem.prepareTargetDirectory("pom.xml");
-    }
-
-    @Test(expected = IOException.class)
-    public void testTargetDirectoryIsWritable() throws Exception {
-        runFileSystemTest(new FileSystemTestWithPreparedDirectory() {
-            @Override
-            public void prepareTempDirectory(Path path) throws IOException {
-                Files.setPosixFilePermissions(path, Collections.<PosixFilePermission>emptySet());
-            }
-
-            @Override
-            public void runTest(Path path) throws IOException {
-                fileSystem.prepareTargetDirectory(path.toString());
-            }
-        });
-    }
-
-    @Test(expected = IOException.class)
-    public void testTargetDirectoryMustBeEmpty() throws Exception {
-        runFileSystemTest(new FileSystemTestWithPreparedDirectory() {
-            @Override
-            public void prepareTempDirectory(Path path) throws IOException {
-                Files.createFile(path.resolve("foo"));
-            }
-
-            @Override
-            public void runTest(Path path) throws IOException {
-                fileSystem.prepareTargetDirectory(path.toString());
-            }
-        });
-    }
-
-    @Test
-    public void testTargetDirectoryMustBeEmptyUnlessItIsAnExport() throws Exception {
-        runFileSystemTest(new FileSystemTestWithPreparedDirectory() {
-            @Override
-            public void prepareTempDirectory(Path path) throws IOException {
-                Files.createFile(path.resolve("foo"));
-                Files.createFile(path.resolve(FileSystem.MAGISTO_EXPORT_MARKER_FILE));
-            }
-
-            @Override
-            public void runTest(Path path) throws IOException {
-                assertNotNull(fileSystem.prepareTargetDirectory(path.toString()));
-            }
-        });
-    }
-
-    @Test(expected = IOException.class)
-    public void testTargetDirectoryContainsDirectory() throws Exception {
-        runFileSystemTest(new FileSystemTestWithPreparedDirectory() {
-            @Override
-            public void prepareTempDirectory(Path path) throws IOException {
-                Files.createDirectory(path.resolve("foo"));
-            }
-
-            @Override
-            public void runTest(Path path) throws IOException {
-                assertNotNull(fileSystem.prepareTargetDirectory(path.toString()));
-            }
-        });
-    }
 
     @Test
     public void testFindAllPaths() throws Exception {
@@ -254,54 +122,6 @@ public class RealFileSystemTest {
     }
 
     @Test
-    public void testSourceAndTargetDoNotOverlap() throws Exception {
-        final Path source = WORKING_DIRECTORY.resolve("foo");
-        final Path target = WORKING_DIRECTORY.resolve("bar");
-        fileSystem.requireDistinct(source, target);
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void testSourceInsideTarget() throws Exception {
-        final Path source = WORKING_DIRECTORY.resolve("bar").resolve("foo");
-        final Path target = WORKING_DIRECTORY.resolve("bar");
-        fileSystem.requireDistinct(source, target);
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void testTargetInsideSource() throws Exception {
-        final Path source = WORKING_DIRECTORY.resolve("foo");
-        final Path target = WORKING_DIRECTORY.resolve("foo").resolve("bar");
-        fileSystem.requireDistinct(source, target);
-    }
-
-    @Test
-    public void testTouchFileIsWritten() throws Exception {
-        runFileSystemTest(new FileSystemTestWithEmptyTempDirectory() {
-            @Override
-            public void runTest(Path path) throws IOException {
-                fileSystem.writeTouchFile(path);
-                assertTrue(Files.exists(resolveTouchFile(path)));
-            }
-        });
-    }
-
-    @Test
-    public void testTouchFileIsReplaced() throws Exception {
-        runFileSystemTest(new FileSystemTestWithPreparedDirectory() {
-            @Override
-            public void prepareTempDirectory(Path path) throws IOException {
-                Files.createFile(resolveTouchFile(path));
-            }
-
-            @Override
-            public void runTest(Path path) throws IOException {
-                fileSystem.writeTouchFile(path);
-                assertTrue(Files.exists(resolveTouchFile(path)));
-            }
-        });
-    }
-
-    @Test
     public void testLastModified() throws Exception {
         runFileSystemTest(new FileSystemTestWithPreparedDirectory() {
 
@@ -380,8 +200,8 @@ public class RealFileSystemTest {
 
             @Override
             public void runTest(Path path) throws IOException {
-                fileSystem.delete(path, createPath("file"));
-                fileSystem.delete(path, createPath("directory"));
+                fileSystem.delete(path.resolve("file"));
+                fileSystem.delete(path.resolve("directory"));
                 // Bad test, it depends on code that's under test itself:
                 assertEquals(0, fileSystem.findAllPaths(path).size());
             }
@@ -415,7 +235,29 @@ public class RealFileSystemTest {
         });
     }
 
-    private Path resolveTouchFile(Path path) {
-        return path.resolve(FileSystem.MAGISTO_EXPORT_MARKER_FILE);
+
+    @Test
+    public void testDirectoryIsEmpty() throws Exception {
+        runFileSystemTest(new FileSystemTestWithEmptyTempDirectory() {
+            @Override
+            public void runTest(Path path) throws IOException {
+                assertTrue(fileSystem.isEmpty(path));
+            }
+        });
+    }
+
+    @Test
+    public void testDirectoryIsNotEmpty() throws Exception {
+        runFileSystemTest(new FileSystemTestWithPreparedDirectory() {
+            @Override
+            public void prepareTempDirectory(Path path) throws IOException {
+                Files.createFile(path.resolve("foo"));
+            }
+
+            @Override
+            public void runTest(Path path) throws IOException {
+                assertFalse(fileSystem.isEmpty(path));
+            }
+        });
     }
 }

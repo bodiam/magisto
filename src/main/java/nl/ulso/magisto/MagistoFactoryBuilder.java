@@ -18,7 +18,7 @@ package nl.ulso.magisto;
 
 import nl.ulso.magisto.io.FileSystem;
 
-import java.nio.file.Path;
+import java.io.IOException;
 
 /**
  * Builder for the {@link nl.ulso.magisto.MagistoFactory}.
@@ -35,9 +35,49 @@ public interface MagistoFactoryBuilder {
 
     FileSystem getFileSystem();
 
-    MagistoFactoryBuilder withSourceRoot(Path sourceRoot);
+    /**
+     * Resolves and checks the source directory.
+     * <p>
+     * If the directory is not according to the rules, this method throws an {@link IOException}. The rules are:
+     * </p>
+     * <ul>
+     * <li>It must exist</li>
+     * <li>It must be a directory</li>
+     * <li>It must be readable</li>
+     * </li>
+     * </ul>
+     * <p>
+     * The path returned is an absolute path.
+     * </p>
+     *
+     * @param sourceDirectory Name of the source directory.
+     * @return Existing, valid, real path to the directory.
+     * @throws IOException if the path couldn't be resolved or if it isn't valid.
+     */
+    MagistoFactoryBuilder withSourceDirectory(String sourceDirectory) throws IOException;
 
-    MagistoFactoryBuilder withTargetRoot(Path targetRoot);
+    /**
+     * Prepares the target directory.
+     * <p>
+     * If the target directory doesn't yet exist, it will be created.
+     * </p>
+     * <p>
+     * If the target does exist, it must be according to these rules:
+     * </p>
+     * <ul>
+     * <li>It must be a directory</li>
+     * <li>It must be writable</li>
+     * <li>It must be empty, or it must have a file called "{@value TouchFile#TOUCH_FILE}".</li>
+     * </ul>
+     * <p>
+     * The path returned is an absolute path.
+     * </p>
+     *
+     * @param targetDirectory Name of the target directory.
+     * @return Existing, valid, real path to the directory.
+     * @throws IOException If an exception occurs while accessing the file system.
+     */
+    MagistoFactoryBuilder withTargetDirectory(String targetDirectory) throws IOException;
 
     /**
      * @return A factory for components that run with the provides source and target roots.

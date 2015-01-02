@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Vincent Oostindie
+ * Copyright 2015 Vincent Oostindie
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,38 +14,39 @@
  * limitations under the License
  */
 
-package nl.ulso.magisto.action;
+package nl.ulso.magisto;
 
 import nl.ulso.magisto.io.FileSystem;
 
 import java.io.IOException;
 import java.nio.file.Path;
 
-import static nl.ulso.magisto.action.ActionCategory.SOURCE;
-import static nl.ulso.magisto.action.ActionType.DELETE_TARGET;
 import static nl.ulso.magisto.io.Paths.requireAbsolutePath;
 
 /**
- * Deletes a file or directory from the target root
+ * Represents the touch file stored in the target root.
  */
-class DeleteTargetAction extends AbstractAction {
+public class TouchFile {
+
+    static final String TOUCH_FILE = ".magisto-export";
 
     private final FileSystem fileSystem;
-    private final Path targetRoot;
+    private final Path path;
 
-    DeleteTargetAction(FileSystem fileSystem, Path targetRoot, Path path) {
-        super(path, SOURCE);
+    public TouchFile(FileSystem fileSystem, Path targetRoot) {
         this.fileSystem = fileSystem;
-        this.targetRoot = requireAbsolutePath(targetRoot);
+        this.path = targetRoot.resolve(TOUCH_FILE);
     }
 
-    @Override
-    public ActionType getActionType() {
-        return DELETE_TARGET;
+    public static Path createTouchFilePath(Path targetRoot) {
+        requireAbsolutePath(targetRoot);
+        return targetRoot.resolve(TOUCH_FILE);
     }
 
-    @Override
-    public void perform() throws IOException {
-        fileSystem.delete(targetRoot.resolve(getPath()));
+    public void update() throws IOException {
+        if (fileSystem.exists(path)) {
+            fileSystem.delete(path);
+        }
+        fileSystem.createFile(path);
     }
 }

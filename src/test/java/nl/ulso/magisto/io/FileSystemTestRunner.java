@@ -33,7 +33,7 @@ import static nl.ulso.magisto.io.Paths.createPath;
  */
 public class FileSystemTestRunner {
 
-    static final Path WORKING_DIRECTORY;
+    public static final Path WORKING_DIRECTORY;
     static {
         try {
             // The "toRealPath" ensures that capitalization is correct
