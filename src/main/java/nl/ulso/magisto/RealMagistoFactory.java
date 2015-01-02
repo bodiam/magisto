@@ -90,11 +90,14 @@ class RealMagistoFactory implements MagistoFactory {
     }
 
     @Override
-    public Sitemap createSitemap() {
+    public Sitemap createSitemap(boolean forceNew) {
+        if (forceNew) {
+            return emptySitemap(fileSystem, targetRoot);
+        }
         try {
             return Sitemap.load(fileSystem, targetRoot);
         } catch (IOException e) {
-            return emptySitemap();
+            return emptySitemap(fileSystem, targetRoot);
         }
     }
 }

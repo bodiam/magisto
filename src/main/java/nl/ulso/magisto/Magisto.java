@@ -31,7 +31,6 @@ import java.util.Iterator;
 import java.util.SortedSet;
 
 import static nl.ulso.magisto.io.Paths.prioritizeOnExtension;
-import static nl.ulso.magisto.sitemap.Sitemap.emptySitemap;
 
 /**
  * Knits all the components in the Magisto system together (like a module) and runs it.
@@ -68,7 +67,7 @@ class Magisto {
                     .withTargetDirectory(targetDirectory)
                     .build();
 
-            final Sitemap currentSitemap = loadCurrentSitemap(magistoFactory);
+            final Sitemap currentSitemap = magistoFactory.createSitemap(forceCopy);
 
             final ActionSet actions = new ActionSet(magistoFactory.createActionFactory());
             addSourceActions(actions, magistoFactory, forceCopy || currentSitemap.isEmpty());
@@ -84,19 +83,12 @@ class Magisto {
                 }
             });
 
-            updatedSitemap.save(fileSystem, magistoFactory.getTargetRoot());
+            updatedSitemap.save();
             magistoFactory.createTouchFile().update();
         } finally {
             statistics.end();
         }
         return statistics;
-    }
-
-    private Sitemap loadCurrentSitemap(MagistoFactory factory) {
-        if (forceCopy) {
-            return emptySitemap();
-        }
-        return factory.createSitemap();
     }
 
     /*

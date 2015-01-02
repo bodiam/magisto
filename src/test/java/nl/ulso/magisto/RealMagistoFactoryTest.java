@@ -51,6 +51,6 @@ public class RealMagistoFactoryTest {
 
     @Test
     public void testCreateSitemap() throws Exception {
-        assertNotNull(factory.createSitemap());
+        assertNotNull(factory.createSitemap(false));
     }
 }

@@ -43,9 +43,8 @@ public class SitemapTest {
         final Set<Page> pages = new HashSet<>();
         pages.add(new Page(createPath("dir1", "file1"), "Test 1"));
         pages.add(new Page(createPath("dir2", "file2"), "Test 2"));
-        final Sitemap sitemap = new Sitemap(pages);
         DummyFileSystem fileSystem = new DummyFileSystem();
-        sitemap.save(fileSystem, fileSystem.getTargetRoot());
+        new Sitemap(fileSystem, fileSystem.getTargetRoot(), pages).save();
         final String text = fileSystem.getTextFileFromBufferedWriter(".magisto-sitemap");
         final JSONObject object = (JSONObject) new JSONParser().parse(text);
         final Long version = (Long) object.get("version");

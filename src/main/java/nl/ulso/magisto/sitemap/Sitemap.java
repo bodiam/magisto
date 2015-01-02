@@ -17,8 +17,8 @@
 package nl.ulso.magisto.sitemap;
 
 import nl.ulso.magisto.action.Change;
-import nl.ulso.magisto.loader.DocumentLoader;
 import nl.ulso.magisto.io.FileSystem;
+import nl.ulso.magisto.loader.DocumentLoader;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -51,18 +51,22 @@ public class Sitemap {
     // Whenever an incompatible change is introduced in the Sitemap structure, increase this number!
     private static final long CURRENT_VERSION = 1l;
 
+    private final FileSystem fileSystem;
+    private final Path targetRoot;
     private final SortedSet<Page> pages;
 
-    Sitemap(Set<Page> pages) {
+    Sitemap(FileSystem fileSystem, Path targetRoot, Set<Page> pages) {
+        this.fileSystem = fileSystem;
+        this.targetRoot = targetRoot;
         this.pages = unmodifiableSortedSet(new TreeSet<>(pages));
     }
 
-    private Sitemap() {
-        this(Collections.<Page>emptySet());
+    Sitemap(FileSystem fileSystem, Path targetRoot) {
+        this(fileSystem, targetRoot, Collections.<Page>emptySet());
     }
 
-    public static Sitemap emptySitemap() {
-        return new Sitemap();
+    public static Sitemap emptySitemap(FileSystem fileSystem, Path targetRoot) {
+        return new Sitemap(fileSystem, targetRoot);
     }
 
     public static Sitemap load(FileSystem fileSystem, Path targetRoot) throws IOException {
@@ -80,7 +84,7 @@ public class Sitemap {
                 pages.add(Page.fromJSONObject((JSONObject) object));
             }
             Logger.getGlobal().log(Level.FINE, String.format("Loaded an existing sitemap with %d pages.", pages.size()));
-            return new Sitemap(pages);
+            return new Sitemap(fileSystem, targetRoot, pages);
         } catch (ParseException e) {
             throw new IOException(e);
         }
@@ -90,8 +94,7 @@ public class Sitemap {
         return pages;
     }
 
-    public void save(FileSystem fileSystem, Path targetRoot) throws IOException {
-        requireAbsolutePath(targetRoot);
+    public void save() throws IOException {
         final Path path = targetRoot.resolve(SITEMAP_FILE);
         final Map<String, Object> documentMap = new HashMap<>();
         documentMap.put(VERSION_FIELD, CURRENT_VERSION);
@@ -129,7 +132,7 @@ public class Sitemap {
                     break;
             }
         }
-        return new Sitemap(pages);
+        return new Sitemap(fileSystem, targetRoot, pages);
     }
 
     public boolean isEmpty() {

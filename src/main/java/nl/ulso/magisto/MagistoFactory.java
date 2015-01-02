@@ -67,6 +67,7 @@ public interface MagistoFactory {
 
     /**
      * @return A sitemap from the files in the target path.
+     * @param forceNew
      */
-    Sitemap createSitemap();
+    Sitemap createSitemap(boolean forceNew);
 }
