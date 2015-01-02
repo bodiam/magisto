@@ -49,24 +49,24 @@ public class PathsTest {
     @Test
     public void testExtensionLessPath() throws Exception {
         final Path path = Paths.createPath("file.txt");
-        final ExtensionLessPath extensionLessPath = Paths.splitOnExtension(path);
-        assertEquals("file", extensionLessPath.getPathWithoutExtension().toString());
-        assertEquals("txt", extensionLessPath.getOriginalExtension());
+        final SplitPath splitPath = Paths.splitOnExtension(path);
+        assertEquals("file", splitPath.getPathWithoutExtension().toString());
+        assertEquals("txt", splitPath.getOriginalExtension());
     }
 
     @Test
     public void testExtensionLessPathInSubdirectory() throws Exception {
         final Path path = Paths.createPath("path/to/file.txt");
-        final ExtensionLessPath extensionLessPath = Paths.splitOnExtension(path);
-        assertEquals("path/to/file", extensionLessPath.getPathWithoutExtension().toString());
-        assertEquals("txt", extensionLessPath.getOriginalExtension());
+        final SplitPath splitPath = Paths.splitOnExtension(path);
+        assertEquals("path/to/file", splitPath.getPathWithoutExtension().toString());
+        assertEquals("txt", splitPath.getOriginalExtension());
     }
 
     @Test
     public void testExtensionLessPathOnExtensionLessFile() throws Exception {
         final Path path = Paths.createPath("file");
-        final ExtensionLessPath extensionLessPath = Paths.splitOnExtension(path);
-        assertEquals("file", extensionLessPath.getPathWithoutExtension().toString());
-        assertEquals("", extensionLessPath.getOriginalExtension());
+        final SplitPath splitPath = Paths.splitOnExtension(path);
+        assertEquals("file", splitPath.getPathWithoutExtension().toString());
+        assertEquals("", splitPath.getOriginalExtension());
     }
 }

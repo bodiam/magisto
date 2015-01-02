@@ -20,9 +20,12 @@ import java.nio.file.Path;
 
 /**
  * Filter for paths, used by {@link FileSystem#findAllPaths(java.nio.file.Path, PathFilter, java.util.Comparator)}.
+ * <p>
+ * Paths passed to the filter are always <strong>relative</strong> paths within a root.
+ * </p>
  */
 public interface PathFilter {
-
+    
     boolean acceptDirectory(Path path);
 
     boolean acceptFile(Path path);

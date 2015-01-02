@@ -33,6 +33,7 @@ import java.util.SortedSet;
 import static nl.ulso.magisto.io.FileSystemTestRunner.WORKING_DIRECTORY;
 import static nl.ulso.magisto.io.FileSystemTestRunner.runFileSystemTest;
 import static nl.ulso.magisto.io.Paths.createPath;
+import static nl.ulso.magisto.io.Paths.requireRelativePath;
 import static org.junit.Assert.*;
 
 public class RealFileSystemTest {
@@ -205,11 +206,13 @@ public class RealFileSystemTest {
                 final SortedSet<Path> paths = fileSystem.findAllPaths(path, new PathFilter() {
                     @Override
                     public boolean acceptDirectory(Path path) {
+                        requireRelativePath(path);
                         return !path.getFileName().toString().equals("bar");
                     }
 
                     @Override
                     public boolean acceptFile(Path path) {
+                        requireRelativePath(path);
                         return true;
                     }
                 });

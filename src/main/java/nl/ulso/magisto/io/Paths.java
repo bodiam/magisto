@@ -47,8 +47,8 @@ public final class Paths {
         return FileSystems.getDefault().getPath(first, more);
     }
 
-    public static ExtensionLessPath splitOnExtension(Path path) {
-        return new ExtensionLessPath(path);
+    public static SplitPath splitOnExtension(Path path) {
+        return new SplitPath(path);
     }
 
     public static Comparator<Path> prioritizeOnExtension(String... extensions) {

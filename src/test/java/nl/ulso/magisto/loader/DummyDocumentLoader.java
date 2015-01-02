@@ -26,9 +26,15 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import static nl.ulso.magisto.io.Paths.createPath;
+
 public class DummyDocumentLoader implements DocumentLoader {
 
     private final Path sourceRoot;
+
+    public DummyDocumentLoader() {
+        this(createPath("source"));
+    }
 
     public DummyDocumentLoader(Path sourceRoot) {
         this.sourceRoot = sourceRoot;

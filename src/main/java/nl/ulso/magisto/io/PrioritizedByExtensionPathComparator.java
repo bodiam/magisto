@@ -48,8 +48,8 @@ class PrioritizedByExtensionPathComparator implements Comparator<Path> {
 
     @Override
     public int compare(Path first, Path second) {
-        final ExtensionLessPath firstPath = splitOnExtension(first);
-        final ExtensionLessPath secondPath = splitOnExtension(second);
+        final SplitPath firstPath = splitOnExtension(first);
+        final SplitPath secondPath = splitOnExtension(second);
 
         final int pathComparison = firstPath.getPathWithoutExtension().compareTo(secondPath.getPathWithoutExtension());
         if (pathComparison != 0) {

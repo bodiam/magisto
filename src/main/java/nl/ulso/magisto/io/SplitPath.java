@@ -19,14 +19,17 @@ package nl.ulso.magisto.io;
 import java.nio.file.Path;
 
 /**
- * Represents a path with the extension removed and available separately.
+ * Represents a path that is split on extension.
+ * <p>
+ * Two split paths are the same if the paths <strong>with their extensions removed</strong> are the same.
+ * </p>
  */
-public class ExtensionLessPath {
+public class SplitPath {
 
     private final Path pathWithoutExtension;
     private final String originalExtension;
 
-    ExtensionLessPath(Path path) {
+    SplitPath(Path path) {
         final String filename = path.getName(path.getNameCount() - 1).toString();
         final int position = filename.lastIndexOf('.');
         if (position < 1) {
@@ -36,6 +39,19 @@ public class ExtensionLessPath {
             pathWithoutExtension = path.resolveSibling(filename.substring(0, position));
             originalExtension = filename.substring(position + 1);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        final SplitPath that = (SplitPath) o;
+        return pathWithoutExtension.equals(that.pathWithoutExtension);
+    }
+
+    @Override
+    public int hashCode() {
+        return pathWithoutExtension.hashCode();
     }
 
     public Path getPathWithoutExtension() {

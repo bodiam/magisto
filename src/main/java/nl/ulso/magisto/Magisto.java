@@ -20,8 +20,9 @@ import nl.ulso.magisto.action.Action;
 import nl.ulso.magisto.action.ActionCallback;
 import nl.ulso.magisto.action.ActionSet;
 import nl.ulso.magisto.converter.DocumentConverter;
-import nl.ulso.magisto.loader.DocumentLoader;
 import nl.ulso.magisto.io.FileSystem;
+import nl.ulso.magisto.io.PathFilter;
+import nl.ulso.magisto.loader.DocumentLoader;
 import nl.ulso.magisto.sitemap.Sitemap;
 
 import java.io.IOException;
@@ -36,6 +37,8 @@ import static nl.ulso.magisto.sitemap.Sitemap.emptySitemap;
  * Knits all the components in the Magisto system together (like a module) and runs it.
  */
 class Magisto {
+
+    static final String INDEX_FILE_NAME = "index";
 
     private final boolean forceCopy;
     private final MagistoFactoryBuilder magistoFactoryBuilder;
@@ -94,6 +97,9 @@ class Magisto {
     }
 
     private Sitemap loadCurrentSitemap(Path targetRoot) {
+        if (forceCopy) {
+            return emptySitemap();
+        }
         try {
             return Sitemap.load(fileSystem, targetRoot);
         } catch (IOException e) {
@@ -117,10 +123,11 @@ class Magisto {
         final DocumentConverter documentConverter = magistoFactory.createDocumentConverter();
         final boolean forceConvert = forceOverwrite || documentConverter.isCustomTemplateChanged();
 
-        final Iterator<Path> sources = fileSystem.findAllPaths(sourceRoot,
-                prioritizeOnExtension(documentLoader.getSupportedExtensions())).iterator();
-        final Iterator<Path> targets = fileSystem.findAllPaths(targetRoot,
-                prioritizeOnExtension(documentConverter.getTargetExtension())).iterator();
+        final SortedSet<Path> sourcePaths = findSourcePaths(sourceRoot, documentLoader);
+        final Iterator<Path> sources = sourcePaths.iterator();
+        final Iterator<Path> targets = findTargetPaths(targetRoot,
+                new SkipGeneratedIndexFilesFilter(sourcePaths, documentLoader, documentConverter),
+                documentConverter).iterator();
 
         Path source = nullableNext(sources);
         Path target = nullableNext(targets);
@@ -157,6 +164,16 @@ class Magisto {
                 target = nullableNext(targets);
             }
         }
+    }
+
+    private SortedSet<Path> findSourcePaths(Path sourceRoot, DocumentLoader documentLoader) throws IOException {
+        return fileSystem.findAllPaths(sourceRoot, prioritizeOnExtension(documentLoader.getSupportedExtensions()));
+    }
+
+    private SortedSet<Path> findTargetPaths(Path targetRoot, PathFilter pathFilter,
+                                            DocumentConverter documentConverter) throws IOException {
+        return fileSystem.findAllPaths(targetRoot, pathFilter,
+                prioritizeOnExtension(documentConverter.getTargetExtension()));
     }
 
     private void addStaticActions(ActionSet actions, MagistoFactory magistoFactory) throws IOException {

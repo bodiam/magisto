@@ -31,7 +31,7 @@ import static nl.ulso.magisto.io.Paths.createPath;
 /**
  * Runs tests on the filesystem, preparing a temporary test directory when needed, and removing it afterwards.
  */
-class FileSystemTestRunner {
+public class FileSystemTestRunner {
 
     static final Path WORKING_DIRECTORY;
     static {
@@ -44,7 +44,7 @@ class FileSystemTestRunner {
         }
     }
 
-    static void runFileSystemTest(FileSystemTest test) throws IOException {
+    public static void runFileSystemTest(FileSystemTest test) throws IOException {
         final Path path = resolveTempDirectory();
         createTempDirectoryIfNeeded(test, path);
         try {

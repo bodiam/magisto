@@ -139,19 +139,21 @@ public class RealFileSystem implements FileSystem {
                 if (root != path && Files.isHidden(path)) {
                     return FileVisitResult.SKIP_SUBTREE;
                 }
-                if (!filter.acceptDirectory(path)) {
+                final Path relativePath = root.relativize(path);
+                if (!filter.acceptDirectory(relativePath)) {
                     return FileVisitResult.SKIP_SUBTREE;
                 }
                 if (root != path) {
-                    paths.add(root.relativize(path));
+                    paths.add(relativePath);
                 }
                 return FileVisitResult.CONTINUE;
             }
 
             @Override
             public FileVisitResult visitFile(Path path, BasicFileAttributes attributes) throws IOException {
-                if (!Files.isHidden(path) && filter.acceptFile(path)) {
-                    paths.add(root.relativize(path));
+                final Path relativePath = root.relativize(path);
+                if (!Files.isHidden(path) && filter.acceptFile(relativePath)) {
+                    paths.add(relativePath);
                 }
                 return FileVisitResult.CONTINUE;
             }

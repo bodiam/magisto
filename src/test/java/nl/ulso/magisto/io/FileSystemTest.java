@@ -25,7 +25,7 @@ import java.nio.file.Path;
  *
  * @see nl.ulso.magisto.io.FileSystemTestRunner
  */
-interface FileSystemTest {
+public interface FileSystemTest {
     boolean mustCreateTempDirectory();
 
     void prepareTempDirectory(Path path) throws IOException;
