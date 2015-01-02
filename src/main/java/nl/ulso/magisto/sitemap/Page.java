@@ -16,6 +16,7 @@
 
 package nl.ulso.magisto.sitemap;
 
+import nl.ulso.magisto.io.Paths;
 import org.json.simple.JSONObject;
 
 import java.nio.file.Path;
@@ -27,60 +28,40 @@ import java.util.Map;
  */
 public class Page implements Comparable<Page> {
 
-    private static final String DIRECTORY_FIELD = "directory";
-    private static final String FILE_FIELD = "file";
+    private static final String PATH_FIELD = "path";
     private static final String TITLE_FIELD = "title";
 
-    private final String directory;
-    private final String file;
+    private final Path path;
     private final String title;
 
     Page(Path path) {
         this(path, "");
-
     }
 
     Page(Path path, String title) {
-        this(path.getParent() != null ? path.getParent().toString() : "", path.getFileName().toString(), title);
-    }
-
-    Page(String directory, String file, String title) {
-        this.directory = directory;
-        this.file = file;
+        this.path = path;
         this.title = title;
     }
 
     static Page fromJSONObject(JSONObject object) {
         return new Page(
-                (String) object.get(DIRECTORY_FIELD),
-                (String) object.get(FILE_FIELD),
+                Paths.createPath((String) object.get(PATH_FIELD)),
                 (String) object.get(TITLE_FIELD));
     }
 
     JSONObject toJSONObject() {
         Map<String, String> map = new HashMap<>();
-        map.put(DIRECTORY_FIELD, directory);
-        map.put(FILE_FIELD, file);
+        map.put(PATH_FIELD, path.toString());
         map.put(TITLE_FIELD, title);
         return new JSONObject(map);
     }
 
     @Override
     public int compareTo(Page page) {
-        int comparison = directory.compareTo(page.directory);
-        if (comparison != 0) {
-            return comparison;
-        }
-        return file.compareTo(page.file);
+        return path.compareTo(page.path);
     }
 
-    public String getDirectory() {
-        return directory;
-    }
-
-    public String getFile() {
-        return file;
-    }
+    public Path getPath() { return path; }
 
     public String getTitle() {
         return title;

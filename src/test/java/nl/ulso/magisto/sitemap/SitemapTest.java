@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import static nl.ulso.magisto.io.Paths.createPath;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -33,15 +34,15 @@ import static org.junit.Assert.assertThat;
 public class SitemapTest {
 
     public static final String SITEMAP_JSON = "{\"pages\":[" +
-            "{\"title\":\"Test 1\",\"directory\":\"dir1\",\"file\":\"file1\"}," +
-            "{\"title\":\"Test 2\",\"directory\":\"dir2\",\"file\":\"file2\"}" +
+            "{\"title\":\"Test 1\",\"path\":\"dir1/file1\"}," +
+            "{\"title\":\"Test 2\",\"path\":\"dir2/file2\"}" +
             "],\"version\":1}";
 
     @Test
     public void testWrite() throws Exception {
         final Set<Page> pages = new HashSet<>();
-        pages.add(new Page("dir1", "file1", "Test 1"));
-        pages.add(new Page("dir2", "file2", "Test 2"));
+        pages.add(new Page(createPath("dir1", "file1"), "Test 1"));
+        pages.add(new Page(createPath("dir2", "file2"), "Test 2"));
         final Sitemap sitemap = new Sitemap(pages);
         DummyFileSystem fileSystem = new DummyFileSystem();
         sitemap.save(fileSystem, fileSystem.prepareTargetDirectory(""));
@@ -61,8 +62,7 @@ public class SitemapTest {
         assertEquals(2, sitemap.getPages().size());
         final Page page1 = sitemap.getPages().iterator().next();
         assertEquals("Test 1", page1.getTitle());
-        assertEquals("dir1", page1.getDirectory());
-        assertEquals("file1", page1.getFile());
+        assertEquals("dir1/file1", page1.getPath().toString());
     }
 
     @Test(expected = IOException.class)
