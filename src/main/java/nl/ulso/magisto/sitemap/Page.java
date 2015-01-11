@@ -16,52 +16,52 @@
 
 package nl.ulso.magisto.sitemap;
 
-import nl.ulso.magisto.io.Paths;
 import org.json.simple.JSONObject;
 
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Represents a single page in the sitemap
+ * Represents a single page in the sitemap.
  */
 public class Page implements Comparable<Page> {
 
-    private static final String PATH_FIELD = "path";
+    private static final String FILENAME_FIELD = "filename";
     private static final String TITLE_FIELD = "title";
 
-    private final Path path;
+    private final String filename;
     private final String title;
 
-    Page(Path path) {
-        this(path, "");
+    Page(String filename) {
+        this(filename, "");
     }
 
-    Page(Path path, String title) {
-        this.path = path;
+    Page(String filename, String title) {
+        this.filename = filename;
         this.title = title;
+    }
+
+    @Override
+    public int compareTo(Page page) {
+        return filename.compareTo(page.filename);
     }
 
     static Page fromJSONObject(JSONObject object) {
         return new Page(
-                Paths.createPath((String) object.get(PATH_FIELD)),
+                (String) object.get(FILENAME_FIELD),
                 (String) object.get(TITLE_FIELD));
     }
 
     JSONObject toJSONObject() {
         Map<String, String> map = new HashMap<>();
-        map.put(PATH_FIELD, path.toString());
+        map.put(FILENAME_FIELD, filename);
         map.put(TITLE_FIELD, title);
         return new JSONObject(map);
     }
 
-    @Override
-    public int compareTo(Page page) {
-        return path.compareTo(page.path);
+    public String getFilename() {
+        return filename;
     }
-
-    public Path getPath() { return path; }
 
     public String getTitle() {
         return title;

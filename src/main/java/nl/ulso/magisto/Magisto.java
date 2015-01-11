@@ -73,8 +73,8 @@ class Magisto {
             addSourceActions(actions, magistoFactory, forceCopy || currentSitemap.isEmpty());
             addStaticActions(actions, magistoFactory);
 
-            final Sitemap updatedSitemap = currentSitemap.apply(actions.computeChanges(),
-                    magistoFactory.createDocumentLoader());
+            final Sitemap updatedSitemap = currentSitemap.applyChanges(actions.computeChanges(),
+                    magistoFactory.createDocumentLoader(), magistoFactory.createDocumentConverter());
 
             actions.performAll(new ActionCallback() {
                 @Override
